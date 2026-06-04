@@ -1,0 +1,606 @@
+<!-- NextEnergy Group · Asset Monitoring — Dashboard Prototype v1 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#F6F4EE; --surface:#FFFFFF; --surface-2:#FBFAF6;
+  --ink:#15211C; --ink-2:#465750; --ink-3:#7C8A82;
+  --line:#E4DFD4; --line-2:#EFEBE1;
+  --brand:#15654A; --brand-2:#1F8A66; --brand-tint:#E7F1EC;
+  --gold:#D99A1C; --gold-tint:#FBEFD6;
+  --ok:#2E9E6B; --ok-tint:#E3F3EB;
+  --warn:#E0871A; --warn-tint:#FBEDDB;
+  --crit:#C8423A; --crit-tint:#FBE4E2;
+  --offline:#5B6B63;
+  --unctrl:#6E8597; --unctrl-tint:#E7EDF1;
+  --ctrl:#C16A45; --ctrl-tint:#F6E6DD;
+  --radius:14px; --shadow:0 1px 2px rgba(20,33,28,.04),0 8px 28px rgba(20,33,28,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.mono{font-family:'IBM Plex Mono',monospace;font-feature-settings:"tnum"}
+.app{max-width:1320px;margin:0 auto;padding:0 22px 60px}
+
+/* ---------- Top bar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0 16px;position:sticky;top:0;background:linear-gradient(var(--paper) 78%,rgba(246,244,238,0));z-index:40}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--brand);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.logo:before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--gold),#caa23b);box-shadow:0 0 0 3px rgba(217,154,28,.18)}
+.brand h1{font-size:15px;font-weight:800;letter-spacing:-.2px;line-height:1.1}
+.brand span{font-size:11.5px;color:var(--ink-3);font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:4px;gap:3px}
+.seg button{font-family:inherit;font-size:13px;font-weight:600;color:var(--ink-2);background:none;border:0;padding:8px 15px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.15s}
+.seg button.on{background:var(--ink);color:#fff}
+.seg.sub button.on{background:var(--brand);color:#fff}
+.seg.sm button{padding:6px 11px;font-size:12.5px}
+
+.crumbs{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-3);margin:6px 0 18px;flex-wrap:wrap}
+.crumbs b{color:var(--ink);font-weight:700}
+.crumbs .sep{opacity:.5}
+.crumbs .chip{background:var(--brand-tint);color:var(--brand);font-weight:700;padding:3px 10px;border-radius:20px;font-size:12px}
+.right-tools{display:flex;align-items:center;gap:10px}
+
+/* ---------- Cards ---------- */
+.grid{display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 0}
+.card .hd h3{font-size:13px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;color:var(--ink-2)}
+.card .bd{padding:16px 18px 18px}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.tag .dot{width:6px;height:6px;border-radius:50%}
+.src{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ink-3);cursor:help}
+.src .pin{width:5px;height:5px;border-radius:50%;background:var(--brand-2)}
+.src.alt .pin{background:var(--gold)}
+
+/* ---------- KPI strip ---------- */
+.kpis{grid-template-columns:repeat(6,1fr)}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi .lab{font-size:11.5px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:6px}
+.kpi .val{font-size:25px;font-weight:600;letter-spacing:-.5px;margin-top:7px}
+.kpi .val small{font-size:13px;color:var(--ink-3);font-weight:500;margin-left:2px}
+.kpi .sub{font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px}
+.kpi .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+.up{color:var(--ok)} .down{color:var(--crit)} .flat{color:var(--ink-3)}
+.delta{font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ---------- Focus list ---------- */
+.focus-row{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line-2);cursor:pointer;transition:.12s}
+.focus-row:first-of-type{border-top:0}
+.focus-row:hover{background:var(--surface-2);margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:9px}
+.rank{width:26px;height:26px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center}
+.focus-row .ttl{font-weight:700;font-size:14px}
+.focus-row .meta{font-size:12px;color:var(--ink-3);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.loss{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;text-align:right}
+.loss small{display:block;font-size:10.5px;color:var(--ink-3);font-weight:500}
+.pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
+.pill.unc{background:var(--unctrl-tint);color:var(--unctrl)}
+.pill.ctl{background:var(--ctrl-tint);color:var(--ctrl)}
+
+/* ---------- Waterfall ---------- */
+.wf-wrap{position:relative;padding-top:30px}
+.wf-sections{display:flex;gap:0;margin-bottom:8px}
+.wf-sec-lab{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:5px 10px;border-radius:7px;text-align:center}
+.wf{display:flex;align-items:flex-end;gap:10px;height:300px;position:relative;border-bottom:2px solid var(--line);padding-bottom:0}
+.wf .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.bar{width:100%;border-radius:5px 5px 0 0;position:relative;transition:.5s cubic-bezier(.2,.7,.3,1)}
+.bar .bv{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap}
+.connector{position:absolute;height:1.5px;background:var(--ink-3);opacity:.3;left:50%;width:calc(100% + 10px);top:0}
+.wf-x{display:flex;gap:10px;margin-top:9px}
+.wf-x div{flex:1;text-align:center;font-size:10.5px;font-weight:600;color:var(--ink-2);line-height:1.25}
+.bgband{position:absolute;top:0;bottom:34px;border-radius:9px;z-index:0;pointer-events:none}
+
+/* ---------- Asset table ---------- */
+.atable{width:100%;border-collapse:collapse}
+.atable th{text-align:left;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);padding:0 12px 10px;border-bottom:1px solid var(--line)}
+.atable th.num,.atable td.num{text-align:right;font-family:'IBM Plex Mono',monospace}
+.atable td{padding:12px;border-bottom:1px solid var(--line-2);font-size:13.5px}
+.atable tr{cursor:pointer;transition:.1s}
+.atable tbody tr:hover{background:var(--surface-2)}
+.aname{font-weight:700;display:flex;align-items:center;gap:9px}
+.aname small{display:block;font-weight:500;color:var(--ink-3);font-size:11.5px}
+.statdot{width:9px;height:9px;border-radius:50%;flex:none}
+.s-ok{background:var(--ok)} .s-warn{background:var(--warn)} .s-crit{background:var(--crit)} .s-off{background:var(--offline)}
+.bar-mini{height:7px;border-radius:4px;background:var(--line);overflow:hidden;width:78px;display:inline-block;vertical-align:middle}
+.bar-mini i{display:block;height:100%;border-radius:4px}
+.statustxt{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+
+/* ---------- Side panel ---------- */
+.scrim{position:fixed;inset:0;background:rgba(20,33,28,.34);opacity:0;pointer-events:none;transition:.25s;z-index:50;backdrop-filter:blur(1.5px)}
+.scrim.open{opacity:1;pointer-events:auto}
+.panel{position:fixed;top:0;right:0;height:100%;width:min(480px,94vw);background:var(--paper);box-shadow:-20px 0 50px rgba(20,33,28,.18);transform:translateX(100%);transition:transform .3s cubic-bezier(.3,.8,.3,1);z-index:51;overflow-y:auto;border-left:1px solid var(--line)}
+.panel.open{transform:translateX(0)}
+.panel .phd{position:sticky;top:0;background:var(--brand);color:#fff;padding:20px 22px;z-index:2}
+.panel .phd .pclose{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.16);border:0;color:#fff;width:30px;height:30px;border-radius:8px;font-size:17px;cursor:pointer;line-height:1}
+.panel .phd h2{font-size:21px;font-weight:800;letter-spacing:-.4px}
+.panel .phd .psub{font-size:13px;opacity:.85;margin-top:3px}
+.panel .pbd{padding:18px 22px 40px}
+.mini-kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.mini-kpi .m{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+.mini-kpi .m .l{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-3)}
+.mini-kpi .m .v{font-size:20px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin-top:4px}
+.sect-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-2);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sect-t:before{content:"";width:14px;height:2px;background:var(--gold)}
+.inc{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--crit);border-radius:10px;padding:12px 14px;margin-bottom:9px}
+.inc .it{font-weight:700;font-size:13.5px;display:flex;justify-content:space-between;gap:8px}
+.inc .im{font-size:11.5px;color:var(--ink-3);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- Components / PI ---------- */
+.comp{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line-2)}
+.comp:first-child{border-top:0}
+.comp .cn{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.validate{background:var(--gold-tint);border:1px solid #ecd49a;border-radius:11px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.validate .vt{font-weight:700;font-size:13.5px}
+.validate .vm{font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.btn{font-family:inherit;font-weight:700;font-size:12.5px;border:0;border-radius:9px;padding:9px 14px;cursor:pointer;white-space:nowrap;transition:.12s}
+.btn.gold{background:var(--gold);color:#3a2a06}
+.btn.gold:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+
+/* intraday chart */
+.intraday{height:160px;display:flex;align-items:flex-end;gap:3px;border-bottom:1px solid var(--line);padding-bottom:0;margin-top:6px}
+.intraday .ib{flex:1;background:linear-gradient(var(--gold),#e9c97f);border-radius:3px 3px 0 0;position:relative;min-height:2px;transition:.4s}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+.note{font-size:11.5px;color:var(--ink-3);display:flex;gap:7px;align-items:flex-start;margin-top:14px;padding:11px 13px;background:var(--surface-2);border:1px dashed var(--line);border-radius:10px}
+.hide{display:none!important}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr!important}}
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>NextEnergy Group · Asset Monitoring</h1>
+        <span>Solar Portfolio</span>
+      </div>
+    </div>
+    <div class="right-tools">
+      <div class="seg" id="viewSeg">
+        <button data-view="biz" class="on">Group / Investment View</button>
+        <button data-view="pi">Performance Insight</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="crumbs" id="crumbs"></div>
+
+  <!-- ======================= BUSINESS DASHBOARD ======================= -->
+  <div id="bizView">
+    <div class="grid kpis" id="kpiStrip" style="margin-bottom:16px"></div>
+
+    <div class="grid two-col" style="grid-template-columns:1.05fr .95fr;margin-bottom:16px">
+      <!-- Focus -->
+      <div class="card">
+        <div class="hd">
+          <h3>Where to focus today</h3>
+          <span class="tag"><span class="dot" style="background:var(--crit)"></span> Ranked by revenue at risk</span>
+        </div>
+        <div class="bd" id="focusList"></div>
+      </div>
+      <!-- Mini status summary -->
+      <div class="card">
+        <div class="hd">
+          <h3>Portfolio status · today</h3>
+          <span class="src" title="Availability source: SCADA inverter & meter telemetry, last 15-min interval">
+            <span class="pin"></span> SCADA · 15-min
+          </span>
+        </div>
+        <div class="bd" id="statusSummary"></div>
+      </div>
+    </div>
+
+    <!-- Waterfall -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="hd">
+        <h3>Energy loss waterfall — YTD vs Acquisition Budget</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="src" title="Expected derived from Acquisition Budget (monthly granularity). Generation source: Meter (DADC).">
+            <span class="pin"></span> Budget: Acquisition Case
+          </span>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="wf-wrap" id="waterfall"></div>
+        <div class="legend">
+          <span><i style="background:var(--brand)"></i> Expected / Actual</span>
+          <span><i style="background:var(--gold)"></i> Irradiation (weather-normalised)</span>
+          <span><i style="background:var(--unctrl)"></i> Uncontrollable loss (excluded from O&M / WiseEnergy KPIs)</span>
+          <span><i style="background:var(--ctrl)"></i> Controllable loss (included)</span>
+        </div>
+        <div class="note">
+          <span>ⓘ</span>
+          <span><b>Why two sections?</b> Controllable losses sit within the O&M / WiseEnergy contractual scope and drive the measured availability KPI. Uncontrollable losses (grid, curtailment, weather, irradiation shortfall) are excluded once incidents are classified — the split is what determines who is accountable for each MWh lost.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Asset table -->
+    <div class="card">
+      <div class="hd">
+        <h3>Asset performance — YTD</h3>
+        <div class="seg sub sm" id="fundSeg"></div>
+      </div>
+      <div class="bd">
+        <table class="atable">
+          <thead><tr>
+            <th>Asset</th><th>Fund · Region</th><th class="num">Capacity</th>
+            <th>Energy vs Budget</th><th class="num">PR</th><th class="num">Avail.</th>
+            <th class="num">Revenue at risk</th><th>Status</th>
+          </tr></thead>
+          <tbody id="assetRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= PERFORMANCE INSIGHT DASHBOARD ======================= -->
+  <div id="piView" class="hide">
+    <div class="card" style="margin-bottom:16px">
+      <div class="bd" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <span class="tag" style="font-size:12px"><b style="color:var(--ink)">Asset</b></span>
+          <select id="piAsset" style="font-family:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer"></select>
+          <span class="tag"><span class="dot" id="piStatDot"></span> <span id="piStatTxt"></span></span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:12px;color:var(--ink-3);font-weight:600">View</span>
+          <div class="seg sub sm" id="piTimeSeg">
+            <button class="on" data-t="day">Daily</button>
+            <button data-t="mtd">MTD</button>
+            <button data-t="ytd">YTD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid kpis" id="piKpis" style="margin-bottom:16px"></div>
+
+    <div class="grid two-col" style="grid-template-columns:1.1fr .9fr;margin-bottom:16px">
+      <div class="card">
+        <div class="hd"><h3>Intraday generation vs irradiance — today (15-min)</h3>
+          <span class="src alt" title="Irradiation source switched to Satellite (SolarGIS) at 11:15 — on-site pyranometer flagged for drift"><span class="pin"></span> Irradiation: Satellite ⚠</span>
+        </div>
+        <div class="bd">
+          <div class="intraday" id="intraday"></div>
+          <div class="legend"><span><i style="background:var(--gold)"></i> Exported energy (Meter)</span><span style="color:var(--ink-3)">06:00 → 21:00</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Potential issues to validate</h3>
+          <span class="tag"><span class="dot" style="background:var(--gold)"></span> Auto-detected</span></div>
+        <div class="bd" id="validateList"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="hd"><h3>Component-level availability & loss</h3>
+        <span class="src" title="Per-component telemetry from SCADA sensor mapping (master data model)"><span class="pin"></span> Component model</span>
+      </div>
+      <div class="bd" id="compList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Side panel -->
+<div class="scrim" id="scrim" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="phd">
+    <button class="pclose" onclick="closePanel()">×</button>
+    <h2 id="pName"></h2>
+    <div class="psub" id="pSub"></div>
+  </div>
+  <div class="pbd" id="pBody"></div>
+</div>
+
+<script>
+/* ============================ MOCK DATA ============================ */
+const FUNDS = ["Helios Solar Fund I","Iberia Renewables Fund II","Continental Solar Fund III"];
+const ASSETS = [
+  {n:"Badajoz Sol",      f:1, r:"Spain",    mwp:60, pr:79.1, avail:88.4, eng:48210, bud:54600, rev:142000, status:"crit", reason:"Inverter Block 3 offline", cls:"ctl"},
+  {n:"Brindisi PV",      f:0, r:"Italy",    mwp:45, pr:83.6, avail:91.0, eng:38900, bud:43100, rev:98000,  status:"crit", reason:"DNO grid outage", cls:"unc"},
+  {n:"Sevilla Llano",    f:1, r:"Spain",    mwp:50, pr:84.2, avail:93.1, eng:41250, bud:44800, rev:54000,  status:"warn", reason:"Tracker fault rows 12–18", cls:"ctl"},
+  {n:"Foggia Sud",       f:0, r:"Italy",    mwp:38, pr:85.0, avail:94.5, eng:31100, bud:33200, rev:38000,  status:"warn", reason:"Soiling cluster (north field)", cls:"ctl"},
+  {n:"Thornbury Solar",  f:0, r:"UK",       mwp:32, pr:82.4, avail:95.2, eng:18600, bud:19400, rev:21000,  status:"warn", reason:"String box BB-07 failure", cls:"ctl"},
+  {n:"Alentejo Norte",   f:1, r:"Portugal", mwp:42, pr:86.1, avail:97.8, eng:35400, bud:36100, rev:9000,   status:"ok",   reason:"—", cls:"ctl"},
+  {n:"Arles Plaine",     f:2, r:"France",   mwp:40, pr:85.7, avail:97.1, eng:30200, bud:31000, rev:11000,  status:"ok",   reason:"Minor curtailment", cls:"unc"},
+  {n:"Toulouse Sud",     f:2, r:"France",   mwp:35, pr:86.8, avail:98.2, eng:26900, bud:27300, rev:5000,   status:"ok",   reason:"—", cls:"ctl"},
+  {n:"Lecce PV",         f:2, r:"Italy",    mwp:30, pr:85.9, avail:96.9, eng:24100, bud:24800, rev:7000,   status:"ok",   reason:"—", cls:"ctl"},
+  {n:"Wymeswold",        f:0, r:"UK",       mwp:28, pr:81.2, avail:90.3, eng:14900, bud:16200, rev:33000,  status:"crit", reason:"Inverter 4 derate", cls:"ctl", off:true},
+];
+
+// Group YTD waterfall (MWh)
+const WF = [
+  {k:"Expected",            v:248000, type:"total", c:"var(--brand)"},
+  {k:"Irradiation\nshortfall", v:-8200, type:"loss", c:"var(--gold)", sec:"unc"},
+  {k:"Grid / DNO\noutage",  v:-3100, type:"loss", c:"var(--unctrl)", sec:"unc"},
+  {k:"Curtailment",         v:-2400, type:"loss", c:"var(--unctrl)", sec:"unc"},
+  {k:"Weather /\nForce maj.", v:-1200, type:"loss", c:"var(--unctrl)", sec:"unc"},
+  {k:"Inverter\navailability", v:-2900, type:"loss", c:"var(--ctrl)", sec:"ctl"},
+  {k:"Soiling",             v:-1800, type:"loss", c:"var(--ctrl)", sec:"ctl"},
+  {k:"Tracker\nfaults",     v:-900,  type:"loss", c:"var(--ctrl)", sec:"ctl"},
+  {k:"BoP / String\nfailures", v:-700, type:"loss", c:"var(--ctrl)", sec:"ctl"},
+  {k:"Other\nO&M",          v:-500,  type:"loss", c:"var(--ctrl)", sec:"ctl"},
+  {k:"Actual",              v:226300, type:"total", c:"var(--brand-2)"},
+];
+
+const COMPONENTS = {
+  default:[
+    {n:"Transformer TR-01", t:"Transformer", avail:99.4, loss:120, status:"ok"},
+    {n:"Inverter Block 1",  t:"Inverter",    avail:98.9, loss:210, status:"ok"},
+    {n:"Inverter Block 2",  t:"Inverter",    avail:97.1, loss:540, status:"warn"},
+    {n:"Inverter Block 3",  t:"Inverter",    avail:61.2, loss:2980, status:"crit"},
+    {n:"String box SB-12",  t:"String Box",  avail:99.8, loss:30,  status:"ok"},
+    {n:"Tracker zone C",    t:"Tracker",     avail:94.0, loss:410, status:"warn"},
+  ]
+};
+const VALIDATE = [
+  {t:"Inverter Block 3 — zero output since 04:12", m:"Energy-based availability 0% · est. 2,980 MWh YTD loss · likely IGBT fault", sev:"crit"},
+  {t:"Tracker zone C stuck at 18° since yesterday", m:"PR 6pts below neighbouring zones · est. 410 MWh loss", sev:"warn"},
+  {t:"North-field soiling ratio rising (−4.1%)", m:"7-day trend vs clean reference cells · cleaning may be due", sev:"warn"},
+];
+
+/* ============================ STATE ============================ */
+let state = {view:"biz", fund:"all", piAsset:0, piTime:"day"};
+const STAT = {ok:"Healthy", warn:"Underperforming", crit:"Critical", off:"Offline"};
+const fmt = n => n.toLocaleString('en-GB');
+const eur = n => "€"+(n>=1000? (n/1000).toFixed(0)+"k" : n);
+
+/* ============================ RENDER: shared ============================ */
+function renderCrumbs(){
+  const c = document.getElementById('crumbs');
+  if(state.view==="biz"){
+    const scope = state.fund==="all" ? "All Funds" : FUNDS[state.fund];
+    c.innerHTML = `<b>Group</b><span class="sep">›</span>${state.fund==="all"?'<b>All Funds</b>':FUNDS[state.fund]} <span class="chip">Monthly · YTD</span>`;
+  } else {
+    const a = ASSETS[state.piAsset];
+    c.innerHTML = `<b>${FUNDS[a.f]}</b><span class="sep">›</span>${a.r}<span class="sep">›</span><b>${a.n}</b> <span class="chip">${state.piTime==='day'?'Daily':state.piTime.toUpperCase()}</span>`;
+  }
+}
+
+/* ============================ BUSINESS ============================ */
+function activeAssets(){ return state.fund==="all"?ASSETS:ASSETS.filter(a=>a.f==state.fund); }
+
+function renderKpis(){
+  const A = activeAssets();
+  const eng = A.reduce((s,a)=>s+a.eng,0), bud = A.reduce((s,a)=>s+a.bud,0);
+  const cap = A.reduce((s,a)=>s+a.mwp,0);
+  const rev = A.reduce((s,a)=>s+a.rev,0);
+  const off = A.filter(a=>a.off).length;
+  const pr = (A.reduce((s,a)=>s+a.pr*a.mwp,0)/cap).toFixed(1);
+  const av = (A.reduce((s,a)=>s+a.avail*a.mwp,0)/cap).toFixed(1);
+  const vsBud = ((eng/bud-1)*100).toFixed(1);
+  const cards = [
+    {l:"Installed capacity", v:cap, u:" MWp", sub:`${A.length} solar assets`, sc:"flat", c:"var(--brand)"},
+    {l:"Energy generated", v:(eng/1000).toFixed(1), u:" GWh", sub:`${vsBud>=0?'+':''}${vsBud}% vs budget`, sc:vsBud>=0?"up":"down", c:"var(--gold)", delta:`${vsBud>=0?'▲':'▼'}`},
+    {l:"Performance ratio", v:pr, u:"%", sub:"weighted by capacity", sc:"flat", c:"var(--brand-2)"},
+    {l:"Availability", v:av, u:"%", sub:"energy-based", sc:av>=95?"up":"down", c:"var(--brand-2)"},
+    {l:"Revenue at risk", v:eur(rev), u:"", sub:"open underperformance", sc:"down", c:"var(--crit)"},
+    {l:"Assets offline now", v:off, u:"", sub:off?"needs attention":"all generating", sc:off?"down":"up", c:off?"var(--crit)":"var(--ok)"},
+  ];
+  document.getElementById('kpiStrip').innerHTML = cards.map(k=>`
+    <div class="kpi"><div class="accent" style="background:${k.c}"></div>
+      <div class="lab">${k.l}</div>
+      <div class="val">${k.v}<small>${k.u}</small></div>
+      <div class="sub ${k.sc}"><span class="delta">${k.delta||''}</span>${k.sub}</div>
+    </div>`).join('');
+}
+
+function renderFocus(){
+  const A = activeAssets().filter(a=>a.rev>15000).sort((a,b)=>b.rev-a.rev).slice(0,5);
+  document.getElementById('focusList').innerHTML = A.map((a,i)=>`
+    <div class="focus-row" onclick="openAsset('${a.n}')">
+      <div class="rank">${i+1}</div>
+      <div>
+        <div class="ttl">${a.reason}</div>
+        <div class="meta">
+          <span class="statdot s-${a.status}" style="width:7px;height:7px"></span> ${a.n}
+          <span>·</span> ${a.r}
+          <span class="pill ${a.cls}">${a.cls==='unc'?'Uncontrollable':'Controllable'}</span>
+        </div>
+      </div>
+      <div class="loss">${eur(a.rev)}<small>rev. at risk</small></div>
+    </div>`).join('');
+}
+
+function renderStatusSummary(){
+  const A = activeAssets();
+  const by = {ok:0,warn:0,crit:0};
+  A.forEach(a=>by[a.status==='off'?'crit':a.status]++);
+  const total=A.length;
+  const seg=[['ok','Healthy','var(--ok)'],['warn','Underperforming','var(--warn)'],['crit','Critical / offline','var(--crit)']];
+  document.getElementById('statusSummary').innerHTML = `
+    <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:16px;background:var(--line)">
+      ${seg.map(s=>`<div style="width:${by[s[0]]/total*100}%;background:${s[2]}"></div>`).join('')}
+    </div>
+    ${seg.map(s=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line-2)">
+      <div style="display:flex;align-items:center;gap:9px"><span class="statdot s-${s[0]}"></span>${s[1]}</div>
+      <div class="mono" style="font-weight:600">${by[s[0]]} <span style="color:var(--ink-3);font-weight:400">/ ${total}</span></div>
+    </div>`).join('')}
+    <div class="note"><span>ⓘ</span><span>Status blends real-time availability (SCADA, 15-min) with open incident severity from Calypso. Click any asset below to drill in.</span></div>`;
+}
+
+function renderWaterfall(){
+  const max = 248000, H = 300;
+  let run = WF[0].v;
+  const cols = WF.map((d,i)=>{
+    let top,h;
+    if(d.type==="total"){ h = d.v/max*H; top = H-h; run = d.v; }
+    else { const before=run; run += d.v; const after=run;
+           const hi=Math.max(before,after), lo=Math.min(before,after);
+           h=(hi-lo)/max*H; top=H-(hi/max*H); }
+    return {d,top,h,i,run};
+  });
+  // background bands
+  const idxUnc = WF.map((d,i)=>d.sec==="unc"?i:null).filter(x=>x!=null);
+  const idxCtl = WF.map((d,i)=>d.sec==="ctl"?i:null).filter(x=>x!=null);
+  const n=WF.length, colW=`calc((100% - ${(n-1)*10}px)/${n})`;
+  const bandStyle=(arr,color)=>{
+    const a=Math.min(...arr),b=Math.max(...arr);
+    const left=`calc((${colW} + 10px) * ${a} - 5px)`;
+    const w=`calc((${colW} + 10px) * ${b-a+1})`;
+    return `left:${left};width:${w};background:${color}`;
+  };
+  document.getElementById('waterfall').innerHTML = `
+    <div class="bgband" style="${bandStyle(idxUnc,'var(--unctrl-tint)')};opacity:.55"></div>
+    <div class="bgband" style="${bandStyle(idxCtl,'var(--ctrl-tint)')};opacity:.5"></div>
+    <div style="position:relative;z-index:1">
+      <div style="display:flex;gap:10px;margin-bottom:6px">
+        <div style="${bandStyle(idxUnc,'transparent')};position:absolute" ></div>
+      </div>
+      <div class="wf">
+        ${cols.map(c=>`
+          <div class="col">
+            <div class="bar" style="height:${c.h}px;margin-top:auto;background:${c.d.c}">
+              <span class="bv" style="color:${c.d.type==='total'?'var(--ink)':c.d.c}">${c.d.type==='total'?fmt(c.d.v):(c.d.v<0?'−':'+')+fmt(Math.abs(c.d.v))}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="wf-x">${WF.map(d=>`<div>${d.k.replace(/\n/g,'<br>')}</div>`).join('')}</div>
+    </div>`;
+  // section labels overlaid
+  const wrap=document.getElementById('waterfall');
+  const lab=document.createElement('div');
+  lab.style.cssText="position:absolute;top:0;left:0;right:0;height:24px;z-index:2;pointer-events:none";
+  lab.innerHTML=`
+    <div class="wf-sec-lab" style="position:absolute;${bandStyle(idxUnc,'var(--unctrl)')};color:#fff;top:0">Uncontrollable — excluded</div>
+    <div class="wf-sec-lab" style="position:absolute;${bandStyle(idxCtl,'var(--ctrl)')};color:#fff;top:0">Controllable — included in O&M / WiseEnergy KPIs</div>`;
+  wrap.appendChild(lab);
+}
+
+function renderFundSeg(){
+  const seg=document.getElementById('fundSeg');
+  seg.innerHTML = `<button data-f="all" class="${state.fund==='all'?'on':''}">All Funds</button>`+
+    FUNDS.map((f,i)=>`<button data-f="${i}" class="${state.fund==i?'on':''}">${f.replace(' Fund','').replace('Solar ','')}</button>`).join('');
+  seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{state.fund=b.dataset.f==='all'?'all':+b.dataset.f;renderBiz();});
+}
+
+function renderAssetRows(){
+  const A=activeAssets().slice().sort((a,b)=>b.rev-a.rev);
+  document.getElementById('assetRows').innerHTML = A.map(a=>{
+    const pct=(a.eng/a.bud*100); const over=pct>=100;
+    return `<tr onclick="openAsset('${a.n}')">
+      <td><div class="aname"><span class="statdot s-${a.status}"></span>${a.n}</div></td>
+      <td><div style="font-size:12.5px">${FUNDS[a.f].replace(' Fund','')}<small style="display:block;color:var(--ink-3)">${a.r}</small></div></td>
+      <td class="num">${a.mwp} MWp</td>
+      <td><span class="bar-mini"><i style="width:${Math.min(pct,100)}%;background:${over?'var(--ok)':pct>92?'var(--warn)':'var(--crit)'}"></i></span>
+          <span class="mono" style="font-size:12px;margin-left:7px">${pct.toFixed(0)}%</span></td>
+      <td class="num">${a.pr}%</td>
+      <td class="num">${a.avail}%</td>
+      <td class="num" style="color:${a.rev>50000?'var(--crit)':a.rev>15000?'var(--warn)':'var(--ink-3)'};font-weight:600">${a.rev?eur(a.rev):'—'}</td>
+      <td><span class="statustxt" style="color:var(--${a.status==='off'?'crit':a.status==='ok'?'ok':a.status})">${STAT[a.off?'off':a.status]}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderBiz(){ renderKpis();renderFocus();renderStatusSummary();renderWaterfall();renderFundSeg();renderAssetRows();renderCrumbs(); }
+
+/* ============================ SIDE PANEL ============================ */
+function openAsset(name){
+  const a = ASSETS.find(x=>x.n===name); if(!a) return;
+  document.getElementById('pName').textContent=a.n;
+  document.getElementById('pSub').textContent=`${FUNDS[a.f]} · ${a.r} · ${a.mwp} MWp`;
+  const pct=(a.eng/a.bud*100).toFixed(1);
+  document.getElementById('pBody').innerHTML=`
+    <div class="mini-kpi">
+      <div class="m"><div class="l">Energy (YTD)</div><div class="v">${fmt(a.eng)}<span style="font-size:12px;color:var(--ink-3)"> MWh</span></div></div>
+      <div class="m"><div class="l">vs Acquisition Budget</div><div class="v" style="color:${pct>=100?'var(--ok)':'var(--crit)'}">${pct}%</div></div>
+      <div class="m"><div class="l">Performance Ratio</div><div class="v">${a.pr}%</div></div>
+      <div class="m"><div class="l">Availability (energy)</div><div class="v">${a.avail}%</div></div>
+    </div>
+    <div class="src" style="margin-bottom:4px"><span class="pin"></span> Export energy source: Meter (DADC) · Irradiation: SCADA pyranometer</div>
+    <div class="sect-t">Open incidents (Calypso)</div>
+    ${a.rev>15000?`<div class="inc" style="border-left-color:var(--${a.status==='ok'?'ok':a.status==='warn'?'warn':'crit'})">
+      <div class="it"><span>${a.reason}</span><span class="loss" style="font-size:14px">${eur(a.rev)}</span></div>
+      <div class="im"><span class="pill ${a.cls}">${a.cls==='unc'?'Uncontrollable':'Controllable'}</span><span>Priority: ${a.status==='crit'?'P1':'P2'}</span><span>·</span><span>Owner: O&M contractor</span></div>
+    </div>`:`<div class="note"><span>✓</span><span>No open performance incidents. Asset generating within budget tolerance.</span></div>`}
+    <div class="sect-t">Loss breakdown (YTD)</div>
+    ${miniLoss(a)}
+    <button class="btn ghost" style="width:100%;margin-top:16px" onclick="goToPI('${a.n}')">Open in Performance Insight →</button>`;
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('scrim').classList.add('open');
+}
+function miniLoss(a){
+  const total=a.bud-a.eng;
+  const parts = a.cls==='unc'
+    ? [['Grid / curtailment',0.6,'unc'],['Irradiation shortfall',0.3,'unc'],['Other',0.1,'ctl']]
+    : [[a.reason.split(' ')[0]+' related',0.55,'ctl'],['Soiling',0.2,'ctl'],['Irradiation shortfall',0.25,'unc']];
+  return parts.map(p=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <div style="flex:1;font-size:12.5px">${p[1]>0?'':''}${p[0]}</div>
+    <span class="bar-mini" style="width:120px"><i style="width:${p[1]*100}%;background:var(--${p[2]==='unc'?'unctrl':'ctrl'})"></i></span>
+    <span class="mono" style="font-size:12px;width:62px;text-align:right">${fmt(Math.round(total*p[1]))} MWh</span>
+  </div>`).join('');
+}
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('scrim').classList.remove('open');}
+function goToPI(name){ const i=ASSETS.findIndex(x=>x.n===name); state.piAsset=i; closePanel(); setView('pi'); }
+
+/* ============================ PERFORMANCE INSIGHT ============================ */
+function renderPI(){
+  const sel=document.getElementById('piAsset');
+  if(!sel.options.length){ sel.innerHTML=ASSETS.map((a,i)=>`<option value="${i}">${a.n} — ${a.r}</option>`).join('');
+    sel.onchange=()=>{state.piAsset=+sel.value;renderPI();}; }
+  sel.value=state.piAsset;
+  const a=ASSETS[state.piAsset];
+  document.getElementById('piStatDot').className="dot s-"+(a.off?'off':a.status); document.getElementById('piStatDot').style.background='';
+  document.getElementById('piStatDot').style.cssText=`width:6px;height:6px;border-radius:50%;background:var(--${a.status==='off'?'crit':a.status==='ok'?'ok':a.status})`;
+  document.getElementById('piStatTxt').textContent=STAT[a.off?'off':a.status];
+
+  const day=state.piTime==='day';
+  const k=[
+    {l:"Export energy",v:day?'312':(state.piTime==='mtd'?fmt(Math.round(a.eng*0.08)):fmt(a.eng)),u:" MWh",src:"Meter (DADC)",alt:false},
+    {l:"Irradiation",v:day?'5.41':'1,142',u:day?" kWh/m²":" kWh/m²",src:"Satellite ⚠",alt:true},
+    {l:"Performance ratio",v:a.pr,u:"%",src:"Calculated",alt:false},
+    {l:"Availability (energy)",v:a.avail,u:"%",src:"SCADA",alt:false},
+    {l:"Availability (time)",v:(a.avail+1.8).toFixed(1),u:"%",src:"SCADA",alt:false},
+    {l:"Capacity loss",v:(100-a.avail-1.1).toFixed(1),u:"%",src:"No irr. threshold",alt:false},
+  ];
+  document.getElementById('piKpis').innerHTML=k.map(x=>`
+    <div class="kpi"><div class="accent" style="background:${x.alt?'var(--gold)':'var(--brand-2)'}"></div>
+      <div class="lab">${x.l}</div>
+      <div class="val">${x.v}<small>${x.u}</small></div>
+      <div class="sub"><span class="src ${x.alt?'alt':''}" title="Data lineage made explicit for analysts"><span class="pin"></span>${x.src}</span></div>
+    </div>`).join('');
+
+  // intraday bell curve
+  const bars=Array.from({length:30},(_,i)=>{const x=(i-14.5)/8;let y=Math.exp(-x*x)*100; if(i>=20&&a.status==='crit')y*=0.45; return Math.max(2,y);});
+  document.getElementById('intraday').innerHTML=bars.map((h,i)=>`<div class="ib" style="height:${h}%" title="${(6+i*0.5).toFixed(1)}:00"></div>`).join('');
+
+  document.getElementById('validateList').innerHTML=VALIDATE.map(v=>`
+    <div class="validate">
+      <div><div class="vt"><span class="statdot s-${v.sev}" style="margin-right:7px"></span>${v.t}</div><div class="vm">${v.m}</div></div>
+      <button class="btn gold" onclick="alert('Prototype: this would open Calypso to raise a classified incident from this detection.')">Raise incident</button>
+    </div>`).join('');
+
+  document.getElementById('compList').innerHTML=COMPONENTS.default.map(c=>`
+    <div class="comp">
+      <div class="cn"><span class="statdot s-${c.status}"></span>${c.n}<span class="tag" style="font-size:10px;padding:2px 7px">${c.t}</span></div>
+      <div style="display:flex;align-items:center;gap:9px"><span class="bar-mini"><i style="width:${c.avail}%;background:var(--${c.status==='ok'?'ok':c.status==='warn'?'warn':'crit'})"></i></span><span class="mono" style="font-size:12px;width:44px">${c.avail}%</span></div>
+      <div class="mono" style="font-size:12px;color:${c.loss>1000?'var(--crit)':'var(--ink-2)'};width:90px;text-align:right">${fmt(c.loss)} MWh</div>
+    </div>`).join('');
+  renderCrumbs();
+}
+
+/* ============================ VIEW SWITCH ============================ */
+function setView(v){
+  state.view=v;
+  document.getElementById('bizView').classList.toggle('hide',v!=='biz');
+  document.getElementById('piView').classList.toggle('hide',v!=='pi');
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  if(v==='biz')renderBiz(); else renderPI();
+}
+document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+document.querySelectorAll('#piTimeSeg button').forEach(b=>b.onclick=()=>{
+  state.piTime=b.dataset.t;
+  document.querySelectorAll('#piTimeSeg button').forEach(x=>x.classList.toggle('on',x===b));
+  renderPI();
+});
+
+/* init */
+renderBiz();
+</script>
