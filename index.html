@@ -1,4 +1,4 @@
-<!-- NextEnergy Group · Asset Monitoring — Dashboard Prototype v2 -->
+<!-- NextEnergy Group · Asset Monitoring — Dashboard Prototype v3 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
@@ -8,9 +8,10 @@
   --ink:#15211C;--ink-2:#465750;--ink-3:#7C8A82;
   --line:#E4DFD4;--line-2:#EFEBE1;
   --brand:#15654A;--brand-2:#1F8A66;--brand-tint:#E7F1EC;
-  --gold:#D99A1C;--gold-2:#b9821a;--gold-tint:#FBEFD6;
+  --blue:#2C6E9B;--blue-tint:#E4EEF5;
+  --gold:#D99A1C;--gold-tint:#FBEFD6;
   --ok:#2E9E6B;--ok-tint:#E3F3EB;--warn:#E0871A;--warn-tint:#FBEDDB;
-  --crit:#C8423A;--crit-tint:#FBE4E2;--offline:#5B6B63;--offline-tint:#E8EAE7;
+  --crit:#C8423A;--crit-tint:#FBE4E2;--offline:#5B6B63;
   --unctrl:#6E8597;--unctrl-tint:#E7EDF1;--ctrl:#C16A45;--ctrl-tint:#F6E6DD;
   --radius:14px;--shadow:0 1px 2px rgba(20,33,28,.04),0 8px 28px rgba(20,33,28,.06);
 }
@@ -18,7 +19,9 @@
 body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
 .mono{font-family:'IBM Plex Mono',monospace;font-feature-settings:"tnum"}
 .app{max-width:1320px;margin:0 auto;padding:0 22px 60px}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 0 14px;position:sticky;top:0;background:linear-gradient(var(--paper) 80%,rgba(246,244,238,0));z-index:40}
+.stickyhead{position:sticky;top:0;z-index:40;background:var(--paper);border-bottom:1px solid transparent;transition:.2s}
+.stickyhead.stuck{border-bottom-color:var(--line);box-shadow:0 6px 18px rgba(20,33,28,.05)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0 10px}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:38px;height:38px;border-radius:10px;background:var(--brand);position:relative;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .logo:before{content:"";position:absolute;inset:9px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--gold),#caa23b);box-shadow:0 0 0 3px rgba(217,154,28,.18)}
@@ -30,25 +33,30 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .seg.sub button.on{background:var(--brand);color:#fff}
 .seg.gold button.on{background:var(--gold);color:#3a2a06}
 .seg.sm button{padding:6px 11px;font-size:12.5px}
-/* sub-header */
-.subhead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:6px 0 16px;flex-wrap:wrap}
-.navsel{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.navsel .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-3)}
-.navsel .crumbs b{color:var(--ink);font-weight:700}.navsel .crumbs .sep{opacity:.5}
+.seg.xs button{padding:5px 9px;font-size:12px}
+.subhead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:4px 0 12px;flex-wrap:wrap}
+.navsel{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.navsel .crumbs{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-3)}
+.navsel .crumbs b{color:var(--ink);font-weight:800}.navsel .crumbs .sep{opacity:.5}
 .fundpick{font-family:inherit;font-size:14px;font-weight:700;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--brand);cursor:pointer}
-.clock{text-align:right;font-size:12px;color:var(--ink-2);line-height:1.5}
-.clock .t{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;color:var(--ink)}
-.clock .loc{font-weight:600}.clock .range{color:var(--ink-3);font-size:11.5px}
-/* live strip */
-.live{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(100deg,#10342a,#15654A);color:#fff;border-radius:var(--radius);padding:13px 18px;margin-bottom:16px;flex-wrap:wrap;box-shadow:var(--shadow)}
-.live .l1{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.livedot{width:9px;height:9px;border-radius:50%;background:#7CF0B0;box-shadow:0 0 0 0 rgba(124,240,176,.7);animation:pulse 2s infinite}
+.headright{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.clock{text-align:right;font-size:12px;color:var(--ink-2);line-height:1.45}
+.clock .t{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;color:var(--ink)}
+.clock .range{color:var(--ink-3);font-size:11px}
+.live{display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(100deg,#0e3127,#15654A 60%,#1c7a59);color:#fff;border-radius:var(--radius);padding:14px 18px;margin:14px 0 16px;flex-wrap:wrap;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.live:before{content:"";position:absolute;inset:0;background:radial-gradient(160px 120px at 12% 30%,rgba(217,154,28,.25),transparent 70%)}
+.live .l1{display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative}
+.livedot{width:9px;height:9px;border-radius:50%;background:#7CF0B0;animation:pulse 2s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(124,240,176,.6)}70%{box-shadow:0 0 0 9px rgba(124,240,176,0)}100%{box-shadow:0 0 0 0 rgba(124,240,176,0)}}
-.live .big{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600}
-.live .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;opacity:.8;font-weight:600}
+.live .big{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600}
+.live .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;opacity:.8;font-weight:600}
 .live small{opacity:.85}
-.live .cta{background:var(--gold);color:#3a2a06;border:0;font-family:inherit;font-weight:700;font-size:12.5px;padding:9px 14px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.live .cta{background:var(--gold);color:#3a2a06;border:0;font-family:inherit;font-weight:700;font-size:12.5px;padding:9px 14px;border-radius:9px;cursor:pointer;white-space:nowrap;position:relative}
 .live .cta:hover{filter:brightness(1.05)}
+.sunwrap{display:flex;align-items:center;gap:12px}
+.rays{transform-origin:34px 34px;animation:spin 22s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.weather{font-weight:700;font-size:13px}
 .grid{display:grid;gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 .card .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px 0;flex-wrap:wrap}
@@ -57,8 +65,7 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .tag .dot{width:6px;height:6px;border-radius:50%}
 .src{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:var(--ink-3);cursor:help}
-.src .pin{width:5px;height:5px;border-radius:50%;background:var(--brand-2)}
-.src.alt .pin{background:var(--gold)}
+.src .pin{width:5px;height:5px;border-radius:50%;background:var(--brand-2)}.src.alt .pin{background:var(--gold)}
 .kpis{grid-template-columns:repeat(6,1fr)}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .kpi.click{cursor:pointer;transition:.12s}.kpi.click:hover{border-color:var(--ink-3);transform:translateY(-1px)}
@@ -70,19 +77,6 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .kpi .spark{margin-top:8px;height:24px;width:100%}
 .up{color:var(--ok)}.down{color:var(--crit)}.flat{color:var(--ink-3)}
 .delta{font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px}
-/* trends */
-.trend-ctrls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.chipsel{display:flex;gap:6px;flex-wrap:wrap}
-.chipsel button{font-family:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);padding:6px 11px;border-radius:20px;cursor:pointer;transition:.12s}
-.chipsel button.on{background:var(--brand-tint);border-color:var(--brand-2);color:var(--brand)}
-.trend-head{display:flex;align-items:flex-end;gap:24px;margin-bottom:6px;flex-wrap:wrap}
-.trend-head .now{font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;letter-spacing:-.5px}
-.trend-head .now small{font-size:14px;color:var(--ink-3)}
-.trend-head .vs{font-size:12.5px;color:var(--ink-2)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:10px}
-.legend span{display:flex;align-items:center;gap:6px}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
-.legend i.dash{height:0;width:16px;border-top:2px dashed var(--ink-3);border-radius:0}
-/* focus */
 .focus-row{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line-2);cursor:pointer;transition:.12s}
 .focus-row:first-of-type{border-top:0}
 .focus-row:hover{background:var(--surface-2);margin:0 -10px;padding-left:10px;padding-right:10px;border-radius:9px}
@@ -94,23 +88,44 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .loss .e{font-size:11px;color:var(--ink-2);font-weight:500}
 .pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px}
 .pill.unc{background:var(--unctrl-tint);color:var(--unctrl)}.pill.ctl{background:var(--ctrl-tint);color:var(--ctrl)}
-/* status */
 .st-row{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-top:1px solid var(--line-2);cursor:pointer;border-radius:8px;transition:.12s}
-.st-row:hover{background:var(--surface-2)}
-.st-row.on{background:var(--brand-tint)}
+.st-row:hover{background:var(--surface-2)}.st-row.on{background:var(--brand-tint)}
 .statdot{width:9px;height:9px;border-radius:50%;flex:none}
 .s-ok{background:var(--ok)}.s-warn{background:var(--warn)}.s-crit{background:var(--crit)}.s-off{background:var(--offline)}
-/* waterfall */
-.wf-wrap{position:relative;padding-top:30px}
+.trend-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:0;border-radius:var(--radius);padding:16px 18px;cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;color:var(--ink);transition:.12s}
+.trend-toggle:hover{background:var(--surface-2)}
+.trend-toggle .chev{transition:.25s;color:var(--ink-3)}
+.trend-toggle.open .chev{transform:rotate(90deg)}
+.trend-toggle small{color:var(--ink-3);font-weight:500}
+#tip{position:fixed;z-index:99;display:none;pointer-events:none;background:var(--ink);color:#fff;border-radius:9px;padding:9px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:240px}
+#tip b{font-family:'IBM Plex Mono',monospace}
+#tip .th{font-weight:700;margin-bottom:3px}
+.hit{cursor:pointer}
+.chipsel{display:flex;gap:6px;flex-wrap:wrap}
+.chipsel button{font-family:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink-3);padding:5px 11px;border-radius:20px;cursor:pointer;transition:.12s;display:flex;align-items:center;gap:6px}
+.chipsel button .sw{width:9px;height:9px;border-radius:3px;background:currentColor;opacity:.35}
+.chipsel button.on{color:var(--ink);border-color:currentColor}
+.chipsel button.on .sw{opacity:1}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:10px}
+.legend span{display:flex;align-items:center;gap:6px}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.legend i.dash{height:0;width:16px;border-top:2px dashed var(--ink-3);border-radius:0}
+.tlegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+.tlegend .ti{font-size:12px;display:flex;align-items:center;gap:7px}
+.tlegend .ti b{font-family:'IBM Plex Mono',monospace}
+.tlegend .ti .sw{width:14px;height:3px;border-radius:2px}
+.axside{font-size:9.5px;font-weight:700;color:var(--ink-3);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+.wf-wrap{position:relative}
+.wf-seclabs{position:relative;height:22px;margin-bottom:8px}
 .wf{display:flex;align-items:flex-end;gap:10px;height:300px;position:relative;border-bottom:2px solid var(--line)}
-.wf .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-.bar{width:100%;border-radius:5px 5px 0 0;position:relative;transition:.5s cubic-bezier(.2,.7,.3,1)}
-.bar .bv{position:absolute;top:-19px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;white-space:nowrap}
+.wf .col{flex:1;height:100%;position:relative}
+.bar{width:100%;border-radius:5px 5px 0 0;position:absolute;left:0;transition:.5s cubic-bezier(.2,.7,.3,1)}
+.bar .bv{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:600;white-space:nowrap}
+.bar .bvin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;color:#fff;white-space:nowrap}
+.wf-conn{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
 .wf-x{display:flex;gap:10px;margin-top:9px}
 .wf-x div{flex:1;text-align:center;font-size:10.5px;font-weight:600;color:var(--ink-2);line-height:1.25}
-.bgband{position:absolute;top:0;bottom:34px;border-radius:9px;z-index:0;pointer-events:none}
+.bgband{position:absolute;top:0;bottom:0;border-radius:9px;z-index:0;pointer-events:none}
 .wf-sec-lab{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:5px 10px;border-radius:7px;text-align:center;position:absolute;top:0;z-index:2;color:#fff}
-/* table */
 .filterbar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--brand-tint);border:1px solid var(--brand-2);border-radius:10px;padding:9px 14px;margin-bottom:12px;font-size:13px;font-weight:600;color:var(--brand)}
 .filterbar button{background:var(--brand);color:#fff;border:0;border-radius:7px;padding:5px 11px;font-family:inherit;font-weight:600;font-size:12px;cursor:pointer}
 .atable{width:100%;border-collapse:collapse}
@@ -122,15 +137,13 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .bar-mini{height:7px;border-radius:4px;background:var(--line);overflow:hidden;width:78px;display:inline-block;vertical-align:middle}
 .bar-mini i{display:block;height:100%;border-radius:4px}
 .statustxt{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
-/* panel */
 .scrim{position:fixed;inset:0;background:rgba(20,33,28,.34);opacity:0;pointer-events:none;transition:.25s;z-index:50;backdrop-filter:blur(1.5px)}
 .scrim.open{opacity:1;pointer-events:auto}
 .panel{position:fixed;top:0;right:0;height:100%;width:min(500px,94vw);background:var(--paper);box-shadow:-20px 0 50px rgba(20,33,28,.18);transform:translateX(100%);transition:transform .3s cubic-bezier(.3,.8,.3,1);z-index:51;overflow-y:auto;border-left:1px solid var(--line)}
 .panel.open{transform:translateX(0)}
 .panel .phd{position:sticky;top:0;background:var(--brand);color:#fff;padding:20px 22px;z-index:2}
 .panel .phd .pclose{position:absolute;top:16px;right:18px;background:rgba(255,255,255,.16);border:0;color:#fff;width:30px;height:30px;border-radius:8px;font-size:17px;cursor:pointer;line-height:1}
-.panel .phd h2{font-size:21px;font-weight:800;letter-spacing:-.4px}
-.panel .phd .psub{font-size:13px;opacity:.85;margin-top:3px}
+.panel .phd h2{font-size:21px;font-weight:800;letter-spacing:-.4px}.panel .phd .psub{font-size:13px;opacity:.85;margin-top:3px}
 .panel .pbd{padding:18px 22px 40px}
 .mini-kpi{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
 .mini-kpi .m{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
@@ -142,11 +155,9 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 .inc .it{font-weight:700;font-size:13.5px;display:flex;justify-content:space-between;gap:8px}
 .inc .im{font-size:11.5px;color:var(--ink-3);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .rev-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
-.rev-row .rn{flex:1;font-size:12.5px}
-.rev-row .rb{width:110px}
+.rev-row .rn{flex:1;font-size:12.5px}.rev-row .rb{width:110px}
 .comp{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line-2)}
-.comp:first-child{border-top:0}
-.comp .cn{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.comp:first-child{border-top:0}.comp .cn{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px}
 .validate{background:var(--gold-tint);border:1px solid #ecd49a;border-radius:11px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .validate .vt{font-weight:700;font-size:13.5px}.validate .vm{font-size:11.5px;color:var(--ink-2);margin-top:3px}
 .btn{font-family:inherit;font-weight:700;font-size:12.5px;border:0;border-radius:9px;padding:9px 14px;cursor:pointer;white-space:nowrap;transition:.12s}
@@ -161,68 +172,42 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 </style>
 
 <div class="app">
-  <div class="topbar">
-    <div class="brand"><div class="logo"></div>
-      <div><h1>NextEnergy Group · Asset Monitoring</h1><span>Solar Portfolio</span></div>
+  <div class="stickyhead" id="stickyhead">
+    <div class="topbar">
+      <div class="brand"><div class="logo"></div>
+        <div><h1>NextEnergy Group · Asset Monitoring</h1><span>Solar Portfolio</span></div></div>
+      <div class="headright">
+        <div class="seg" id="viewSeg">
+          <button data-view="biz" class="on">Group / Investment View</button>
+          <button data-view="pi">Performance Insight</button></div>
+      </div>
     </div>
-    <div class="seg" id="viewSeg">
-      <button data-view="biz" class="on">Group / Investment View</button>
-      <button data-view="pi">Performance Insight</button>
+    <div class="subhead" id="subhead">
+      <div class="navsel">
+        <div class="crumbs"><b>Group</b><span class="sep">›</span><b id="crumbFund">All Funds</b></div>
+        <select class="fundpick" id="fundPick"></select>
+      </div>
+      <div class="headright">
+        <div class="seg xs" id="curSeg">
+          <button data-c="EUR" class="on">€ EUR</button><button data-c="GBP">£ GBP</button><button data-c="USD">$ USD</button></div>
+        <div class="clock"><div class="t" id="clkTime">—</div><div class="range" id="clkLoc">—</div>
+          <div class="range">Viewing <b id="periodLabel">YTD</b> · <span id="rangeLabel"></span></div></div>
+      </div>
     </div>
   </div>
 
-  <!-- ============ BUSINESS VIEW ============ -->
   <div id="bizView">
-    <div class="subhead">
-      <div class="navsel">
-        <div class="crumbs"><b>Group</b><span class="sep">›</span><span id="crumbFund">All Funds</span></div>
-        <select class="fundpick" id="fundPick"></select>
-      </div>
-      <div class="clock">
-        <div class="t" id="clkTime">—</div>
-        <div><span class="loc" id="clkLoc">—</span></div>
-        <div class="range">Viewing <b id="periodLabel">YTD</b> · <span id="rangeLabel"></span></div>
-      </div>
-    </div>
-
     <div class="live" id="liveStrip"></div>
-
     <div class="grid kpis" id="kpiStrip" style="margin-bottom:16px"></div>
 
-    <!-- Trends -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="hd">
-        <h3>Performance trends — actual vs budget</h3>
-        <div class="trend-ctrls">
-          <div class="seg sub sm" id="periodSeg">
-            <button data-p="qtd">QTD</button><button data-p="ytd" class="on">YTD</button>
-            <button data-p="12m">12M</button><button data-p="all">All</button>
-          </div>
-          <div class="seg gold sm" id="unitSeg">
-            <button data-u="real" class="on">Values</button><button data-u="pct">% of budget</button>
-          </div>
-        </div>
-      </div>
-      <div class="bd">
-        <div class="chipsel" id="kpiChips" style="margin-bottom:14px"></div>
-        <div class="trend-head" id="trendHead"></div>
-        <div id="trendChart"></div>
-        <div class="legend">
-          <span><i style="background:var(--brand)"></i> Actual</span>
-          <span><i class="dash"></i> Budget (Acquisition Case)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="grid two-col" style="grid-template-columns:1.05fr .95fr;margin-bottom:16px">
+    <div class="grid two-col" style="grid-template-columns:1.05fr .95fr;margin-bottom:14px">
       <div class="card">
         <div class="hd"><h3>Where to focus today</h3>
-          <div class="seg sub sm" id="rankSeg">
-            <button data-r="rev" class="on">Revenue at risk</button>
-            <button data-r="eng">Energy loss</button>
-            <button data-r="pri">Priority</button>
-          </div>
-        </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="font-size:11.5px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px">Rank by</span>
+            <div class="seg sub xs" id="rankMetric"><button data-r="rev" class="on">Revenue at risk</button><button data-r="eng">Energy loss</button></div>
+            <div class="seg xs" id="rankDir"><button data-d="desc" class="on">High → Low</button><button data-d="asc">Low → High</button></div>
+          </div></div>
         <div class="bd" id="focusList"></div>
       </div>
       <div class="card">
@@ -232,63 +217,75 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="trendCard" style="margin-bottom:16px">
+      <button class="trend-toggle" id="trendToggle">
+        <span>📈 Performance trends <small>— historical actual vs budget</small></span>
+        <span class="chev">▶</span></button>
+      <div class="bd hide" id="trendBody" style="border-top:1px solid var(--line-2)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3)">Period</span>
+          <div class="seg sub sm" id="periodSeg">
+            <button data-p="mtd">MTD</button><button data-p="qtd">QTD</button>
+            <button data-p="ytd" class="on">YTD</button><button data-p="12m">12M</button><button data-p="all">All</button></div></div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);margin-bottom:8px">Metrics — toggle on / off (each unit gets its own axis)</div>
+        <div class="chipsel" id="kpiChips" style="margin-bottom:12px"></div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);margin-bottom:8px">Budget cases — show / hide (dashed)</div>
+        <div class="chipsel" id="caseChips" style="margin-bottom:16px"></div>
+        <div id="trendChart" style="position:relative"></div>
+        <div class="tlegend" id="trendLegend"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
       <div class="hd">
-        <h3 id="wfTitle">Energy loss waterfall — YTD vs budget</h3>
-        <div class="trend-ctrls">
+        <h3 id="wfTitle">Energy loss waterfall</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <div class="seg gold sm" id="wfMetric"><button data-m="energy" class="on">Energy</button><button data-m="rev">Revenue</button></div>
           <select class="fundpick" id="wfCase" style="color:var(--ink);font-size:13px;padding:7px 10px">
             <option value="acq">Acquisition Case</option><option value="op">Operating Case</option>
-            <option value="tgt">Target Case</option><option value="p50">P50</option><option value="p90">P90</option>
-          </select>
-        </div>
-      </div>
+            <option value="tgt">Target Case</option><option value="p50">P50</option><option value="p90">P90</option></select>
+        </div></div>
       <div class="bd">
         <div class="wf-wrap" id="waterfall"></div>
         <div class="legend">
-          <span><i style="background:var(--brand)"></i> Expected / Actual</span>
+          <span><i style="background:var(--blue)"></i> Expected (budget)</span>
           <span><i style="background:var(--gold)"></i> Irradiation (weather)</span>
           <span><i style="background:var(--unctrl)"></i> Uncontrollable — excluded</span>
           <span><i style="background:var(--ctrl)"></i> Controllable — included in O&M / WiseEnergy KPIs</span>
-        </div>
-        <div class="note"><span>ⓘ</span><span><b>Two sections:</b> controllable losses sit within O&M / WiseEnergy contractual scope and drive measured availability; uncontrollable losses (grid, curtailment, weather, irradiation shortfall) are excluded once incidents are classified. Toggle Energy ↔ Revenue and switch budget case to reframe the gap.</span></div>
+          <span><i style="background:var(--ok)"></i>/<i style="background:var(--crit)"></i> Actual (green ≥ budget · red &lt; budget)</span></div>
+        <div class="note"><span>ⓘ</span><span>The bar steps down from <b>Expected</b> (top-left) through each loss category to land on <b>Actual</b> (right). Uncontrollable losses are excluded once classified; controllable losses sit within O&M / WiseEnergy scope. Toggle Energy ↔ Revenue and switch budget case to reframe the gap.</span></div>
       </div>
     </div>
 
-    <div class="card" style="margin-top:16px">
-      <div class="hd"><h3>Asset performance — YTD</h3>
-        <span class="tag">Click any asset to drill in →</span></div>
-      <div class="bd" id="tableWrap"></div>
-    </div>
+    <div class="card"><div class="hd"><h3>Asset performance — YTD</h3><span class="tag">Click any asset to drill in →</span></div>
+      <div class="bd" id="tableWrap"></div></div>
   </div>
 
-  <!-- ============ PERFORMANCE INSIGHT VIEW (unchanged from v1) ============ -->
+  <!-- Performance Insight (v1) -->
   <div id="piView" class="hide">
-    <div class="card" style="margin-bottom:16px"><div class="bd" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px">
+    <div class="card" style="margin:14px 0 16px"><div class="bd" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <span class="tag" style="font-size:12px"><b style="color:var(--ink)">Asset</b></span>
         <select id="piAsset" style="font-family:inherit;font-size:14px;font-weight:700;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer"></select>
-        <span class="tag"><span class="dot" id="piStatDot"></span> <span id="piStatTxt"></span></span>
-      </div>
+        <span class="tag"><span class="dot" id="piStatDot"></span> <span id="piStatTxt"></span></span></div>
       <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:var(--ink-3);font-weight:600">View</span>
-        <div class="seg sub sm" id="piTimeSeg"><button class="on" data-t="day">Daily</button><button data-t="mtd">MTD</button><button data-t="ytd">YTD</button></div>
-      </div>
+        <div class="seg sub sm" id="piTimeSeg"><button class="on" data-t="day">Daily</button><button data-t="mtd">MTD</button><button data-t="ytd">YTD</button></div></div>
     </div></div>
     <div class="grid kpis" id="piKpis" style="margin-bottom:16px"></div>
     <div class="grid two-col" style="grid-template-columns:1.1fr .9fr;margin-bottom:16px">
       <div class="card"><div class="hd"><h3>Intraday generation vs irradiance — today (15-min)</h3>
-        <span class="src alt" title="Irradiation switched to Satellite (SolarGIS) at 11:15 — on-site pyranometer flagged for drift"><span class="pin"></span> Irradiation: Satellite ⚠</span></div>
+        <span class="src alt" title="Irradiation switched to Satellite (SolarGIS) at 11:15 — pyranometer flagged for drift"><span class="pin"></span> Irradiation: Satellite ⚠</span></div>
         <div class="bd"><div class="intraday" id="intraday"></div>
           <div class="legend"><span><i style="background:var(--gold)"></i> Exported energy (Meter)</span><span style="color:var(--ink-3)">06:00 → 21:00</span></div></div></div>
       <div class="card"><div class="hd"><h3>Potential issues to validate</h3><span class="tag"><span class="dot" style="background:var(--gold)"></span> Auto-detected</span></div>
-        <div class="bd" id="validateList"></div></div>
-    </div>
+        <div class="bd" id="validateList"></div></div></div>
     <div class="card"><div class="hd"><h3>Component-level availability & loss</h3>
-      <span class="src" title="Per-component telemetry from SCADA sensor mapping (master data model)"><span class="pin"></span> Component model</span></div>
+      <span class="src" title="Per-component telemetry from SCADA sensor mapping"><span class="pin"></span> Component model</span></div>
       <div class="bd" id="compList"></div></div>
   </div>
 </div>
 
+<div id="tip"></div>
 <div class="scrim" id="scrim" onclick="closePanel()"></div>
 <div class="panel" id="panel"><div class="phd"><button class="pclose" onclick="closePanel()">×</button>
   <h2 id="pName"></h2><div class="psub" id="pSub"></div></div><div class="pbd" id="pBody"></div></div>
@@ -297,7 +294,8 @@ body{background:var(--paper);color:var(--ink);font-family:'Hanken Grotesk',sans-
 /* ===== DATA ===== */
 const FUNDS=["Helios Solar Fund I","Iberia Renewables Fund II","Continental Solar Fund III"];
 const REGION={UK:'🇬🇧',Italy:'🇮🇹',Spain:'🇪🇸',Portugal:'🇵🇹',France:'🇫🇷',India:'🇮🇳',US:'🇺🇸'};
-const PRICE=92; // blended €/MWh for prototype revenue conversion
+const PRICE=92;
+const RATES={EUR:1,GBP:0.85,USD:1.08},SYM={EUR:'€',GBP:'£',USD:'$'};
 const ASSETS=[
  {n:"Badajoz Sol",f:1,r:"Spain",mwp:60,pr:79.1,avail:88.4,eng:48210,bud:54600,rev:142000,eloss:1850,status:"crit",reason:"Inverter Block 3 offline",cls:"ctl"},
  {n:"Brindisi PV",f:0,r:"Italy",mwp:45,pr:83.6,avail:91.0,eng:38900,bud:43100,rev:98000,eloss:1320,status:"crit",reason:"DNO grid outage",cls:"unc"},
@@ -317,7 +315,6 @@ const REVMIX={
  Portugal:[['PPA / merchant',.85],['Guarantees of Origin',.15]],
  France:[['PPA / merchant',.80],['Complément de rémunération',.12],['Guarantees of Origin',.08]],
 };
-// waterfall loss components (absolute MWh, All Funds, fixed across cases)
 const OPLOSS=[
  {k:"Grid / DNO\noutage",v:3100,c:"var(--unctrl)",sec:"unc"},
  {k:"Curtailment",v:2400,c:"var(--unctrl)",sec:"unc"},
@@ -328,8 +325,14 @@ const OPLOSS=[
  {k:"BoP / String\nfailures",v:700,c:"var(--ctrl)",sec:"ctl"},
  {k:"Other\nO&M",v:500,c:"var(--ctrl)",sec:"ctl"},
 ];
-const CASES={acq:330500,op:325500,tgt:342000,p50:334500,p90:323200}; // All-Funds Expected (MWh)
+const CASES={acq:330500,op:325500,tgt:342000,p50:334500,p90:323200};
 const CASENAME={acq:"Acquisition Case",op:"Operating Case",tgt:"Target Case",p50:"P50",p90:"P90"};
+const CASEFACTOR={acq:1,op:0.985,tgt:1.035,p50:1.012,p90:0.978};
+const PCTOFFSET={acq:0,op:-0.5,tgt:1.0,p50:0.4,p90:-0.8};
+const CASEDASH={acq:'6 4',op:'2 3',tgt:'9 4',p50:'1 4',p90:'10 3 2 3'};
+const KCOL={energy:'#D99A1C',irr:'#C16A45',pr:'#15654A',avail:'#1F8A66',rev:'#2C6E9B',rrisk:'#C8423A'};
+const KNAME={energy:'Energy',irr:'Irradiation',pr:'Perf. ratio',avail:'Availability',rev:'Revenue',rrisk:'Revenue at risk'};
+const SCALE={energy:'gwh',irr:'irr',pr:'pct',avail:'pct',rev:'curM',rrisk:'curk'};
 const COMPONENTS=[
  {n:"Transformer TR-01",t:"Transformer",avail:99.4,loss:120,status:"ok"},
  {n:"Inverter Block 1",t:"Inverter",avail:98.9,loss:210,status:"ok"},
@@ -346,24 +349,28 @@ const VALIDATE=[
 const SEAS=[0.45,0.6,0.85,1.05,1.25,1.35,1.4,1.3,1.05,0.8,0.55,0.4];
 const STAT={ok:"Healthy",warn:"Underperforming",crit:"Critical",off:"Offline"};
 
-let state={view:"biz",fund:"all",bizPeriod:"ytd",bizUnit:"real",kpiSel:"energy",rank:"rev",tableFilter:null,wfMetric:"energy",wfCase:"acq",piAsset:0,piTime:"day"};
+let state={view:"biz",fund:"all",bizPeriod:"ytd",currency:"EUR",
+  kpiOn:{energy:true,irr:false,pr:false,avail:false,rev:false,rrisk:false},
+  caseOn:{acq:true,op:false,tgt:false,p50:false,p90:false},
+  rankMetric:"rev",rankDir:"desc",tableFilter:null,wfMetric:"energy",wfCase:"acq",
+  trendsOpen:false,piAsset:0,piTime:"day"};
+
 const fmt=n=>Math.round(n).toLocaleString('en-GB');
-const eur=n=>n>=1e6?"€"+(n/1e6).toFixed(2)+"M":n>=1000?"€"+Math.round(n/1000)+"k":"€"+Math.round(n);
+function cur(vEUR){const r=RATES[state.currency],s=SYM[state.currency],x=vEUR*r;
+  return x>=1e6?s+(x/1e6).toFixed(2)+'M':x>=1000?s+Math.round(x/1000)+'k':s+Math.round(x);}
 const cat=a=>a.off?'off':a.status;
 const activeAssets=()=>state.fund==="all"?ASSETS:ASSETS.filter(a=>a.f==state.fund);
 const fundFactor=()=>{const t=ASSETS.reduce((s,a)=>s+a.bud,0);return activeAssets().reduce((s,a)=>s+a.bud,0)/t;};
 
-/* ===== CLOCK / LOCALE ===== */
+/* ===== CLOCK ===== */
 const TZMAP={'Europe/London':['United Kingdom','🇬🇧'],'Europe/Rome':['Italy','🇮🇹'],'Europe/Madrid':['Spain','🇪🇸'],'Europe/Lisbon':['Portugal','🇵🇹'],'Europe/Paris':['France','🇫🇷'],'Asia/Kolkata':['India','🇮🇳'],'America/New_York':['United States','🇺🇸'],'America/Chicago':['United States','🇺🇸'],'America/Los_Angeles':['United States','🇺🇸'],'America/Denver':['United States','🇺🇸']};
 function tickClock(){
-  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const loc=TZMAP[tz]||[tz.split('/').pop().replace(/_/g,' '),'🌍'];
-  const now=new Date();
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone,loc=TZMAP[tz]||[tz.split('/').pop().replace(/_/g,' '),'🌍'],now=new Date();
   document.getElementById('clkTime').textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  document.getElementById('clkLoc').innerHTML=loc[1]+" "+loc[0]+" · "+now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-  // range label
-  const y=now.getFullYear();const p=state.bizPeriod;let from;
-  if(p==='ytd')from=new Date(y,0,1);
+  document.getElementById('clkLoc').innerHTML=loc[1]+" "+loc[0]+" · "+now.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const y=now.getFullYear(),p=state.bizPeriod;let from;
+  if(p==='mtd')from=new Date(y,now.getMonth(),1);
+  else if(p==='ytd')from=new Date(y,0,1);
   else if(p==='qtd')from=new Date(y,Math.floor(now.getMonth()/3)*3,1);
   else if(p==='12m')from=new Date(y-1,now.getMonth()+1,1);
   else from=new Date(y-2,now.getMonth()+1,1);
@@ -372,164 +379,219 @@ function tickClock(){
   document.getElementById('periodLabel').textContent=p.toUpperCase();
 }
 
-/* ===== LIVE STRIP ===== */
-let liveBase=null;
+/* ===== LIVE ===== */
+function sunGauge(pct){
+  const r=27,c=2*Math.PI*r,off=c*(1-Math.min(pct,100)/100);
+  let rays='';for(let i=0;i<12;i++){const a=i*30*Math.PI/180,x1=34+Math.cos(a)*30,y1=34+Math.sin(a)*30,x2=34+Math.cos(a)*36,y2=34+Math.sin(a)*36;rays+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#F4D58D" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>`;}
+  return `<svg width="68" height="68" viewBox="0 0 68 68"><g class="rays">${rays}</g>
+   <circle cx="34" cy="34" r="${r}" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="5"/>
+   <circle cx="34" cy="34" r="${r}" fill="none" stroke="#F4D58D" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 34 34)" style="transition:stroke-dashoffset .6s"/>
+   <circle cx="34" cy="34" r="15" fill="url(#sg)"/>
+   <defs><radialGradient id="sg"><stop offset="0%" stop-color="#FFE9A8"/><stop offset="100%" stop-color="#E0A52E"/></radialGradient></defs>
+   <text x="34" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="#5a3d05" font-family="IBM Plex Mono">${Math.round(pct)}</text></svg>`;
+}
 function renderLive(){
-  const cap=activeAssets().reduce((s,a)=>s+a.mwp,0);
-  if(liveBase===null)liveBase=cap*0.64;
-  const jitter=(Math.random()-0.5)*cap*0.03;
-  const out=cap*0.64+jitter; const exp=cap*0.67;
-  const pct=(out/exp*100).toFixed(0);
+  const cap=activeAssets().reduce((s,a)=>s+a.mwp,0),jit=(Math.random()-0.5)*cap*0.03;
+  const out=cap*0.64+jit,exp=cap*0.67,pct=out/exp*100;
+  const w=pct>=95?['Strong sun','☀️']:pct>=85?['Bright','🌤️']:pct>=75?['Hazy','⛅']:['Overcast','☁️'];
   const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   document.getElementById('liveStrip').innerHTML=`
    <div class="l1">
      <div style="display:flex;align-items:center;gap:9px"><span class="livedot"></span><span class="lbl">Live SCADA</span></div>
-     <div><span class="lbl">Portfolio output now</span><div class="big">${out.toFixed(0)} <small style="font-size:13px">MW</small> <small>/ ${exp.toFixed(0)} MW expected · ${pct}%</small></div></div>
-     <div><span class="lbl">Assets generating</span><div class="big">${activeAssets().filter(a=>!a.off).length}<small style="font-size:13px">/${activeAssets().length}</small></div></div>
-     <div style="opacity:.8;font-size:11.5px">Last interval: ${t}</div>
+     <div class="sunwrap">${sunGauge(pct)}<div><div class="weather">${w[1]} ${w[0]}</div><div class="lbl" style="margin-top:2px">${pct.toFixed(0)}% of expected output</div></div></div>
+     <div><span class="lbl">Output now</span><div class="big">${out.toFixed(0)} <small style="font-size:13px">MW</small> <small>/ ${exp.toFixed(0)} MW expected</small></div></div>
+     <div><span class="lbl">Generating</span><div class="big">${activeAssets().filter(a=>!a.off).length}<small style="font-size:13px">/${activeAssets().length}</small></div></div>
+     <div style="opacity:.8;font-size:11.5px">Last interval ${t}</div>
    </div>
-   <button class="cta" onclick="setView('pi')">View real-time detail in Performance Insight →</button>`;
+   <button class="cta" onclick="setView('pi')">Real-time detail in Performance Insight →</button>`;
+}
+
+/* ===== SERIES ENGINE ===== */
+function buildBuckets(){
+  const now=new Date(),y=now.getFullYear(),mo=now.getMonth(),p=state.bizPeriod;
+  if(p==='mtd'){const days=now.getDate(),dim=new Date(y,mo+1,0).getDate();
+    return Array.from({length:days},(_,i)=>({label:String(i+1),sfac:SEAS[mo],scale:1/dim,i}));}
+  const all=[];for(let i=23;i>=0;i--){const d=new Date(y,mo-i,1);all.push({label:d.toLocaleDateString('en-GB',{month:'short'})+" "+String(d.getFullYear()).slice(2),sfac:SEAS[d.getMonth()],scale:1,d,i:23-i});}
+  if(p==='ytd')return all.filter(b=>b.d.getFullYear()===y);
+  if(p==='qtd'){const q=Math.floor(mo/3)*3;return all.filter(b=>b.d.getFullYear()===y&&b.d.getMonth()>=q);}
+  if(p==='12m')return all.slice(-12);return all;
+}
+function kpiAB(key,b,ff,cse){
+  const nz=Math.sin((b.i+1)*2.3)*0.045;let actual,bAcq;
+  if(key==='energy'){bAcq=44*b.sfac*ff*b.scale;actual=bAcq*(0.94+nz);}
+  else if(key==='irr'){bAcq=150*b.sfac*b.scale;actual=bAcq*(0.97+nz);}
+  else if(key==='pr'){bAcq=86;actual=84+nz*30;}
+  else if(key==='avail'){bAcq=98;actual=95.5+nz*25;}
+  else if(key==='rev'){bAcq=44*b.sfac*ff*PRICE/1000*b.scale;actual=bAcq*(0.94+nz);}
+  else{bAcq=250*ff;actual=Math.max(40,(300+Math.sin(b.i*1.7)*180)*ff);}
+  let budget=bAcq;
+  if(cse){if(key==='pr'||key==='avail')budget=bAcq+PCTOFFSET[cse];else budget=bAcq*CASEFACTOR[cse];}
+  return{actual,budget};
+}
+function axisRange(scale,vals){if(scale==='pct')return[70,100];const mx=Math.max(...vals,0.0001)*1.12;return[0,mx];}
+function unitOf(scale){return scale==='gwh'?'GWh':scale==='irr'?'kWh/m²':scale==='pct'?'%':scale==='curM'?SYM[state.currency]+'M':SYM[state.currency]+'k';}
+function fmtKpi(key,v){const r=RATES[state.currency];
+  if(key==='energy')return v.toFixed(1)+' GWh';if(key==='irr')return Math.round(v)+' kWh/m²';
+  if(key==='pr'||key==='avail')return v.toFixed(1)+'%';
+  if(key==='rev')return SYM[state.currency]+(v*r).toFixed(2)+'M';return SYM[state.currency]+Math.round(v*r)+'k';}
+
+/* ===== TOOLTIP ===== */
+let TIPSTORE={},tipN=0;
+function tip(html){const id='tp'+(tipN++);TIPSTORE[id]=html;return id;}
+function showTip(e,id){const t=document.getElementById('tip');t.innerHTML=TIPSTORE[id]||'';t.style.display='block';
+  let x=e.clientX+14,y=e.clientY+14;const r=t.getBoundingClientRect();
+  if(x+r.width>innerWidth)x=e.clientX-r.width-14;if(y+r.height>innerHeight)y=e.clientY-r.height-14;
+  t.style.left=x+'px';t.style.top=Math.max(8,y)+'px';}
+function hideTip(){document.getElementById('tip').style.display='none';}
+function wireTips(root){root.querySelectorAll('[data-tip]').forEach(el=>{const id=el.getAttribute('data-tip');
+  el.addEventListener('mousemove',e=>showTip(e,id));el.addEventListener('mouseleave',hideTip);});}
+function computeSeries(k,buckets,ff,onC){
+  const mtd=state.bizPeriod==='mtd',cumul=(k==='energy'||k==='irr'||k==='rev');
+  const dailyA=buckets.map(b=>kpiAB(k,b,ff).actual);
+  let actual; if(mtd&&cumul){let s=0;actual=dailyA.map(v=>(s+=v));} else actual=dailyA;
+  const cases={};
+  onC.forEach(cse=>{ if(mtd){const mb=kpiAB(k,{sfac:buckets[0].sfac,scale:1,i:0},ff,cse).budget;cases[cse]=buckets.map(()=>mb);}
+    else cases[cse]=buckets.map(b=>kpiAB(k,b,ff,cse).budget);});
+  return {actual,cases,mtd,cumul};
+}
+
+/* ===== TRENDS ===== */
+function renderChips(){
+  document.getElementById('kpiChips').innerHTML=Object.keys(KCOL).map(k=>`<button data-k="${k}" class="${state.kpiOn[k]?'on':''}" style="color:${KCOL[k]}"><span class="sw"></span>${KNAME[k]}</button>`).join('');
+  document.querySelectorAll('#kpiChips button').forEach(b=>b.onclick=()=>{state.kpiOn[b.dataset.k]=!state.kpiOn[b.dataset.k];renderTrend();});
+  document.getElementById('caseChips').innerHTML=Object.keys(CASEFACTOR).map(c=>`<button data-c="${c}" class="${state.caseOn[c]?'on':''}" style="color:var(--ink-2)"><span class="sw"></span>${CASENAME[c]}</button>`).join('');
+  document.querySelectorAll('#caseChips button').forEach(b=>b.onclick=()=>{state.caseOn[b.dataset.c]=!state.caseOn[b.dataset.c];renderTrend();});
+}
+function renderTrend(){
+  if(!state.trendsOpen)return;renderChips();
+  const buckets=buildBuckets(),ff=fundFactor();
+  const onK=Object.keys(KCOL).filter(k=>state.kpiOn[k]),onC=Object.keys(CASEFACTOR).filter(c=>state.caseOn[c]);
+  const chart=document.getElementById('trendChart'),leg=document.getElementById('trendLegend');
+  if(!onK.length){chart.innerHTML='<div style="color:var(--ink-3);padding:30px;text-align:center">Toggle on a metric above to plot it.</div>';leg.innerHTML='';return;}
+  const data={};onK.forEach(k=>data[k]=computeSeries(k,buckets,ff,onC));
+  const scales=[];onK.forEach(k=>{if(!scales.includes(SCALE[k]))scales.push(SCALE[k]);});
+  const leftS=scales[0],rightS=scales.slice(1);
+  const valsFor=s=>{let v=[];onK.forEach(k=>{if(SCALE[k]===s){v=v.concat(data[k].actual);onC.forEach(cse=>v=v.concat(data[k].cases[cse]));}});return v;};
+  const ranges={};scales.forEach(s=>ranges[s]=axisRange(s,valsFor(s)));
+  const repColor=s=>KCOL[onK.find(k=>SCALE[k]===s)];
+  const W=760,H=276,pl=54,pt=20,pb=30,n=buckets.length;
+  const rPad=16+rightS.length*52, plotR=W-rPad;
+  const x=i=>n<2?(pl+plotR)/2:pl+i/(n-1)*(plotR-pl);
+  const yf=f=>pt+(1-Math.max(-0.05,Math.min(1.06,f)))*(H-pt-pb);
+  const yv=(v,k)=>yf((v-ranges[SCALE[k]][0])/(ranges[SCALE[k]][1]-ranges[SCALE[k]][0]));
+  const labv=(v,s)=>s==='curM'?SYM[state.currency]+(v*RATES[state.currency]).toFixed(1):s==='curk'?SYM[state.currency]+Math.round(v*RATES[state.currency]):v.toFixed(s==='pct'||s==='irr'?0:1);
+  let grid='';for(let i=0;i<=4;i++){const yy=yf(i/4).toFixed(1),v=ranges[leftS][0]+(ranges[leftS][1]-ranges[leftS][0])*i/4;
+    grid+='<line x1="'+pl+'" y1="'+yy+'" x2="'+plotR+'" y2="'+yy+'" stroke="var(--line-2)"/>'
+      +'<text x="'+(pl-8)+'" y="'+(+yy+3)+'" text-anchor="end" font-size="9.5" fill="'+repColor(leftS)+'" font-family="IBM Plex Mono">'+labv(v,leftS)+'</text>';}
+  let raxis='';rightS.forEach((s,j)=>{const ax=plotR+12+j*52;for(let i=0;i<=4;i++){const yy=yf(i/4).toFixed(1),v=ranges[s][0]+(ranges[s][1]-ranges[s][0])*i/4;
+    raxis+='<text x="'+ax+'" y="'+(+yy+3)+'" text-anchor="start" font-size="9.5" fill="'+repColor(s)+'" font-family="IBM Plex Mono">'+labv(v,s)+'</text>';}
+    raxis+='<text x="'+ax+'" y="11" text-anchor="start" font-size="9" font-weight="700" fill="'+repColor(s)+'">'+unitOf(s)+'</text>';});
+  const ltitle='<text x="'+pl+'" y="11" font-size="9" font-weight="700" fill="'+repColor(leftS)+'">'+unitOf(leftS)+'</text>';
+  const xl=buckets.map((b,i)=>(n>8&&i%2)?'':'<text x="'+x(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9.5" fill="var(--ink-3)">'+b.label+'</text>').join('');
+  let lines='',pts='';
+  onK.forEach(k=>{onC.forEach(cse=>{const pp=data[k].cases[cse].map((v,i)=>x(i).toFixed(1)+','+yv(v,k).toFixed(1)).join(' ');
+    lines+='<polyline points="'+pp+'" fill="none" stroke="'+KCOL[k]+'" stroke-width="1.6" stroke-dasharray="'+CASEDASH[cse]+'" opacity=".6"/>';});});
+  onK.forEach(k=>{const pp=data[k].actual.map((v,i)=>x(i).toFixed(1)+','+yv(v,k).toFixed(1)).join(' ');
+    lines+='<polyline points="'+pp+'" fill="none" stroke="'+KCOL[k]+'" stroke-width="2.6"/>';
+    data[k].actual.forEach((v,i)=>{const id=tip('<div class="th" style="color:'+KCOL[k]+'">'+KNAME[k]+' · '+buckets[i].label+'</div>'+((data[k].cumul&&data[k].mtd)?'Cumulative ':'')+'<b>'+fmtKpi(k,v)+'</b>');
+      pts+='<circle cx="'+x(i).toFixed(1)+'" cy="'+yv(v,k).toFixed(1)+'" r="2.6" fill="'+KCOL[k]+'"/>'
+        +'<circle class="hit" data-tip="'+id+'" cx="'+x(i).toFixed(1)+'" cy="'+yv(v,k).toFixed(1)+'" r="9" fill="transparent" style="pointer-events:all"/>';});});
+  chart.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="overflow:visible">'+grid+raxis+ltitle+lines+pts+xl+'</svg>';
+  wireTips(chart);
+  leg.innerHTML=onK.map(k=>{const last=data[k].actual[data[k].actual.length-1];const ax=SCALE[k]===leftS?'L':'R'+(rightS.indexOf(SCALE[k])+1);
+    return '<div class="ti"><span class="sw" style="background:'+KCOL[k]+'"></span>'+KNAME[k]+' <b>'+fmtKpi(k,last)+'</b> <span class="axside">'+ax+'</span></div>';}).join('')
+    +(onC.length?'<div class="ti" style="color:var(--ink-3)">— — budget: '+onC.map(c=>CASENAME[c]).join(', ')+(state.bizPeriod==='mtd'?' (flat monthly)':'')+'</div>':'');
 }
 
 /* ===== KPI STRIP ===== */
 function sparkline(key){
-  const m=buildMonths(24).filter(x=>x.d.getFullYear()===new Date().getFullYear());
-  const s=kpiSeries(key,m); if(!s.length)return'';
-  const W=120,H=24,vals=s.map(p=>p.actual),mx=Math.max(...vals),mn=Math.min(...vals);
-  const pts=s.map((p,i)=>`${(i/(s.length-1))*W},${H-(mx===mn?H/2:((p.actual-mn)/(mx-mn))*(H-4)+2)}`).join(' ');
-  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="var(--brand-2)" stroke-width="1.8"/></svg>`;
+  const sv=buildBucketsYTD().map(b=>kpiAB(key,b,fundFactor()).actual);if(sv.length<2)return'';
+  const W=120,H=24,mx=Math.max(...sv),mn=Math.min(...sv);
+  const pts=sv.map((v,i)=>`${(i/(sv.length-1))*W},${(H-(mx===mn?H/2:((v-mn)/(mx-mn))*(H-4)+2)).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${KCOL[key]}" stroke-width="1.8"/></svg>`;
 }
+function buildBucketsYTD(){const now=new Date(),y=now.getFullYear();const a=[];for(let i=11;i>=0;i--){const d=new Date(y,now.getMonth()-i,1);if(d.getFullYear()===y)a.push({sfac:SEAS[d.getMonth()],scale:1,i:11-i});}return a;}
 function renderKpis(){
-  const A=activeAssets();
-  const eng=A.reduce((s,a)=>s+a.eng,0),bud=A.reduce((s,a)=>s+a.bud,0),cap=A.reduce((s,a)=>s+a.mwp,0);
+  const A=activeAssets();const eng=A.reduce((s,a)=>s+a.eng,0),bud=A.reduce((s,a)=>s+a.bud,0),cap=A.reduce((s,a)=>s+a.mwp,0);
   const rev=A.reduce((s,a)=>s+a.rev,0),off=A.filter(a=>a.off).length;
-  const pr=(A.reduce((s,a)=>s+a.pr*a.mwp,0)/cap).toFixed(1),av=(A.reduce((s,a)=>s+a.avail*a.mwp,0)/cap).toFixed(1);
-  const vb=((eng/bud-1)*100).toFixed(1),revTot=eng*PRICE;
+  const pr=(A.reduce((s,a)=>s+a.pr*a.mwp,0)/cap).toFixed(1),av=(A.reduce((s,a)=>s+a.avail*a.mwp,0)/cap).toFixed(1),vb=((eng/bud-1)*100).toFixed(1);
   const cards=[
    {l:"Installed capacity",v:cap,u:" MWp",sub:`${A.length} solar assets`,c:"var(--brand)"},
-   {l:"Energy generated",v:(eng/1000).toFixed(1),u:" GWh",sub:`<span class="${vb>=0?'up':'down'} delta">${vb>=0?'▲':'▼'} ${Math.abs(vb)}%</span> vs budget`,c:"var(--gold)",spark:'energy'},
+   {l:"Energy generated",v:(eng/1000).toFixed(1),u:" GWh",sub:`<span class="${vb>=0?'up':'down'} delta">${vb>=0?'▲':'▼'} ${Math.abs(vb)}%</span> vs budget`,c:KCOL.energy,spark:'energy'},
    {l:"Performance ratio",v:pr,u:"%",sub:"capacity-weighted",c:"var(--brand-2)",spark:'pr'},
    {l:"Availability",v:av,u:"%",sub:"energy-based",c:"var(--brand-2)",spark:'avail'},
-   {l:"Revenue at risk",v:eur(rev),u:"",sub:"open expected loss",c:"var(--crit)",spark:'rrisk'},
+   {l:"Revenue at risk",v:cur(rev),u:"",sub:"open expected loss",c:"var(--crit)",spark:'rrisk'},
    {l:"Assets offline now",v:off,u:"",sub:off?'<span class="down">click to filter ↓</span>':"all generating",c:off?"var(--crit)":"var(--ok)",click:'off'},
   ];
-  document.getElementById('kpiStrip').innerHTML=cards.map(k=>`
-    <div class="kpi ${k.click?'click':''}" ${k.click?`onclick="setFilter('${k.click}')"`:''}>
-      <div class="accent" style="background:${k.c}"></div>
-      <div class="lab">${k.l}</div><div class="val">${k.v}<small>${k.u}</small></div>
-      <div class="sub">${k.sub}</div>${k.spark?sparkline(k.spark):''}
-    </div>`).join('');
-}
-
-/* ===== TRENDS ===== */
-function buildMonths(n){const out=[],now=new Date();for(let i=n-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);out.push({d,label:d.toLocaleDateString('en-GB',{month:'short'})+" "+String(d.getFullYear()).slice(2),mi:d.getMonth()});}return out;}
-function kpiSeries(key,months){const ff=fundFactor();return months.map((m,i)=>{const s=SEAS[m.mi];const nz=Math.sin((i+1)*2.3)*0.045;let a,b;
-  if(key==='energy'){b=44*s*ff;a=b*(0.94+nz);}
-  else if(key==='irr'){b=150*s;a=b*(0.97+nz);}
-  else if(key==='pr'){b=86;a=84+nz*30;}
-  else if(key==='avail'){b=98;a=95.5+nz*25;}
-  else if(key==='rev'){b=44*s*ff*PRICE/1000;a=b*(0.94+nz);}
-  else{b=250*ff;a=Math.max(40,(300+Math.sin(i*1.7)*180)*ff);}
-  return{label:m.label,actual:a,budget:b};});}
-const KPIDEF={energy:['Energy generated','GWh',1],irr:['Irradiation','kWh/m²',0],pr:['Performance ratio','%',1],avail:['Availability','%',1],rev:['Revenue','€M',2],rrisk:['Revenue at risk','€k',0]};
-function periodMonths(){const all=buildMonths(24),p=state.bizPeriod,now=new Date();
-  if(p==='ytd')return all.filter(m=>m.d.getFullYear()===now.getFullYear());
-  if(p==='qtd'){const q=Math.floor(now.getMonth()/3)*3;return all.filter(m=>m.d.getFullYear()===now.getFullYear()&&m.mi>=q);}
-  if(p==='12m')return all.slice(-12);return all;}
-function renderChips(){document.getElementById('kpiChips').innerHTML=Object.keys(KPIDEF).map(k=>`<button data-k="${k}" class="${state.kpiSel===k?'on':''}">${KPIDEF[k][0]}</button>`).join('');
-  document.querySelectorAll('#kpiChips button').forEach(b=>b.onclick=()=>{state.kpiSel=b.dataset.k;renderTrend();});}
-function renderTrend(){
-  renderChips();
-  const def=KPIDEF[state.kpiSel],unit=def[1],dec=def[2];
-  const m=periodMonths(),s=kpiSeries(state.kpiSel,m);
-  const last=s[s.length-1],pctVB=((last.actual/last.budget-1)*100).toFixed(1);
-  const fmtv=v=>(unit==='€M'?'€'+v.toFixed(dec)+'M':unit==='€k'?'€'+Math.round(v)+'k':v.toFixed(dec)+(unit==='%'?'%':' '+unit));
-  document.getElementById('trendHead').innerHTML=`
-    <div><div class="lab" style="font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.4px">${def[0]} · latest month</div>
-    <div class="now">${state.bizUnit==='pct'?(last.actual/last.budget*100).toFixed(1)+'%':fmtv(last.actual)}</div></div>
-    <div class="vs">Budget: <b class="mono">${fmtv(last.budget)}</b><br><span class="${pctVB>=0?'up':'down'}" style="font-weight:700">${pctVB>=0?'▲':'▼'} ${Math.abs(pctVB)}% vs budget</span></div>`;
-  document.getElementById('trendChart').innerHTML=lineChart(s,unit,dec);
-}
-function lineChart(series,unit,dec){
-  const W=720,H=250,pl=52,pr=14,pt=16,pb=30,pct=state.bizUnit==='pct';
-  const pts=pct?series.map(p=>({l:p.label,a:p.budget?p.actual/p.budget*100:0,b:100})):series.map(p=>({l:p.label,a:p.actual,b:p.budget}));
-  if(pts.length<2)return'<div style="color:var(--ink-3);padding:20px">Not enough periods to plot a trend — widen the period.</div>';
-  let max=Math.max(...pts.flatMap(p=>[p.a,p.b]))*1.12;
-  let min=pct?Math.min(...pts.flatMap(p=>[p.a,p.b]),100)*0.9:0;
-  const x=i=>pl+(i/(pts.length-1))*(W-pl-pr),y=v=>pt+(1-(v-min)/(max-min))*(H-pt-pb);
-  const line=k=>pts.map((p,i)=>`${x(i).toFixed(1)},${y(p[k]).toFixed(1)}`).join(' ');
-  const area=`${pl},${y(min)} ${line('a')} ${x(pts.length-1)},${y(min)}`;
-  const ticks=4,gl=Array.from({length:ticks+1},(_,i)=>{const v=min+(max-min)*i/ticks;return`<line x1="${pl}" y1="${y(v).toFixed(1)}" x2="${W-pr}" y2="${y(v).toFixed(1)}" stroke="var(--line-2)"/><text x="${pl-8}" y="${(y(v)+3).toFixed(1)}" text-anchor="end" font-size="9.5" fill="var(--ink-3)" font-family="IBM Plex Mono">${unit==='€M'?'€'+v.toFixed(1):v.toFixed(unit==='%'||pct?0:0)}</text>`;}).join('');
-  const xl=pts.map((p,i)=>(pts.length>8&&i%2)?'':`<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9.5" fill="var(--ink-3)">${p.l}</text>`).join('');
-  const dots=pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.a).toFixed(1)}" r="2.6" fill="var(--brand)"/>`).join('');
-  return`<svg viewBox="0 0 ${W} ${H}" width="100%" style="overflow:visible">
-    ${gl}
-    <polygon points="${area}" fill="var(--brand-tint)" opacity=".55"/>
-    <polyline points="${line('b')}" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-dasharray="5 4"/>
-    <polyline points="${line('a')}" fill="none" stroke="var(--brand)" stroke-width="2.4"/>
-    ${dots}${xl}</svg>`;
+  document.getElementById('kpiStrip').innerHTML=cards.map(k=>`<div class="kpi ${k.click?'click':''}" ${k.click?`onclick="setFilter('${k.click}')"`:''}>
+    <div class="accent" style="background:${k.c}"></div><div class="lab">${k.l}</div>
+    <div class="val">${k.v}<small>${k.u}</small></div><div class="sub">${k.sub}</div>${k.spark?sparkline(k.spark):''}</div>`).join('');
 }
 
 /* ===== FOCUS ===== */
 function renderFocus(){
-  let A=activeAssets().filter(a=>a.rev>8000);
-  if(state.rank==='rev')A.sort((a,b)=>b.rev-a.rev);
-  else if(state.rank==='eng')A.sort((a,b)=>b.eloss-a.eloss);
-  else A.sort((a,b)=>(b.status==='crit')-(a.status==='crit')||b.rev-a.rev);
-  A=A.slice(0,5);
-  document.getElementById('focusList').innerHTML=A.map((a,i)=>`
-    <div class="focus-row" onclick="openAsset('${a.n}')">
-      <div class="rank">${i+1}</div>
-      <div><div class="ttl">${a.reason}</div>
-        <div class="meta"><span class="statdot s-${cat(a)}" style="width:7px;height:7px"></span> ${REGION[a.r]} ${a.n}
-          <span>·</span> ${a.r}<span class="pill ${a.cls}">${a.cls==='unc'?'Uncontrollable':'Controllable'}</span></div></div>
-      <div class="loss">${eur(a.rev)}<small>rev. at risk</small><span class="e mono">${fmt(a.eloss)} MWh</span></div>
-    </div>`).join('');
+  let A=activeAssets().filter(a=>a.rev>8000);const key=state.rankMetric==='rev'?'rev':'eloss';
+  A.sort((a,b)=>state.rankDir==='desc'?b[key]-a[key]:a[key]-b[key]);A=A.slice(0,5);
+  document.getElementById('focusList').innerHTML=A.map((a,i)=>'<div class="focus-row" onclick="openAsset(\''+a.n+'\')">'
+    +'<div class="rank">'+(i+1)+'</div>'
+    +'<div><div class="ttl">'+a.reason+'</div><div class="meta"><span class="statdot s-'+cat(a)+'" style="width:7px;height:7px"></span> '+REGION[a.r]+' '+a.n
+    +' <span>·</span> '+a.r+'<span class="pill '+a.cls+'">'+(a.cls==='unc'?'Uncontrollable':'Controllable')+'</span></div></div>'
+    +'<div class="loss">'+cur(a.rev)+'<small>rev. at risk</small><span class="e mono">'+fmt(a.eloss)+' MWh</span></div></div>').join('')
+    +'<div style="font-size:11px;color:var(--ink-3);margin-top:10px;padding-top:10px;border-top:1px solid var(--line-2)">Ranked by <b style="color:var(--ink-2)">'+(state.rankMetric==='rev'?'revenue at risk':'energy loss')+'</b>, '+(state.rankDir==='desc'?'highest first':'lowest first')+'. The two usually align, but can diverge where price differs by region or contract.</div>';
 }
 
 /* ===== STATUS ===== */
 function renderStatus(){
-  const A=activeAssets(),by={ok:0,warn:0,crit:0,off:0};A.forEach(a=>by[cat(a)]++);
-  const total=A.length;
-  const seg=[['ok','Healthy'],['warn','Underperforming'],['crit','Critical'],['off','Offline']];
-  document.getElementById('statusSummary').innerHTML=`
-    <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:14px;background:var(--line)">
-      ${seg.map(s=>`<div style="width:${by[s[0]]/total*100}%;background:var(--${s[0]==='off'?'offline':s[0]})"></div>`).join('')}</div>
+  const A=activeAssets(),by={ok:0,warn:0,crit:0,off:0};A.forEach(a=>by[cat(a)]++);const total=A.length;
+  const seg=[['off','Offline'],['crit','Critical'],['warn','Underperforming'],['ok','Healthy']];
+  document.getElementById('statusSummary').innerHTML=`<div style="display:flex;height:14px;border-radius:7px;overflow:hidden;margin-bottom:14px;background:var(--line)">
+    ${seg.map(s=>`<div style="width:${by[s[0]]/total*100}%;background:var(--${s[0]==='off'?'offline':s[0]})"></div>`).join('')}</div>
     ${seg.map(s=>`<div class="st-row ${state.tableFilter===s[0]?'on':''}" onclick="setFilter('${s[0]}')">
       <div style="display:flex;align-items:center;gap:9px"><span class="statdot s-${s[0]}"></span>${s[1]}</div>
       <div class="mono" style="font-weight:600">${by[s[0]]} <span style="color:var(--ink-3);font-weight:400">/ ${total}</span></div></div>`).join('')}
-    <div class="note"><span>ⓘ</span><span>Click a status to filter the asset table. Status blends real-time availability (SCADA, 15-min) with open Calypso incident severity.</span></div>`;
+    <div class="note"><span>ⓘ</span><span>Click a status to filter the asset table. Blends real-time availability (SCADA 15-min) with open Calypso incident severity.</span></div>`;
 }
 
-/* ===== WATERFALL ===== */
+/* ===== WATERFALL (descending staircase) ===== */
 function renderWaterfall(){
-  const ff=fundFactor(),rev=state.wfMetric==='rev',exp=CASES[state.wfCase]*ff;
-  const actual=309560*ff;
-  const opScaled=OPLOSS.map(o=>({...o,v:o.v*ff}));
-  const opSum=opScaled.reduce((s,o)=>s+o.v,0);
+  const ff=fundFactor(),rev=state.wfMetric==='rev',r=RATES[state.currency];
+  const exp=CASES[state.wfCase]*ff,actual=309560*ff;
+  const op=OPLOSS.map(o=>({...o,v:o.v*ff})),opSum=op.reduce((s,o)=>s+o.v,0);
   const irr=Math.max(0,exp-actual-opSum);
-  const conv=v=>rev?v*PRICE:v;
-  const rows=[{k:"Expected",v:conv(exp),type:"total",c:"var(--brand)"},
-    {k:"Irradiation\nshortfall",v:-conv(irr),type:"loss",c:"var(--gold)",sec:"unc"},
-    ...opScaled.map(o=>({k:o.k,v:-conv(o.v),type:"loss",c:o.c,sec:o.sec})),
-    {k:"Actual",v:conv(actual),type:"total",c:"var(--brand-2)"}];
-  const max=conv(exp),H=300;let run=rows[0].v;
-  const cols=rows.map(d=>{let top,h;if(d.type==="total"){h=d.v/max*H;run=d.v;}else{const before=run;run+=d.v;h=Math.abs(d.v)/max*H;top=H-(Math.max(before,run)/max*H);}return{d,h};});
-  const n=rows.length,colW=`calc((100% - ${(n-1)*10}px)/${n})`;
+  const conv=v=>rev?v*PRICE*r:v;
+  const expC=conv(exp),actC=conv(actual),irrC=conv(irr);
+  const rows=[{k:"Expected",v:expC,type:"total",c:"var(--blue)"},
+    {k:"Irradiation\nshortfall",v:irrC,type:"loss",c:"var(--gold)",sec:"unc"},
+    ...op.map(o=>({k:o.k,v:conv(o.v),type:"loss",c:o.c,sec:o.sec})),
+    {k:"Actual",v:actC,type:"total",c:actual>=exp?"var(--ok)":"var(--crit)"}];
+  const H=300,n=rows.length,scaleMax=expC/0.92;
+  const after=[];let run=expC;after[0]=run;for(let i=1;i<n-1;i++){run-=rows[i].v;after[i]=run;}
+  const unit=rev?'':' MWh';const lbl=v=>rev?cur(v/r):fmt(v);
+  const pctExp=v=>((v/expC)*100).toFixed(1);
+  let bars='';rows.forEach((d,i)=>{let bottom,height,inside=false,tipHtml;
+    if(d.type==='total'){bottom=0;height=d.v/scaleMax*H;
+      tipHtml='<div class="th" style="color:'+(d.k==='Expected'?'var(--blue)':(actual>=exp?'var(--ok)':'var(--crit)'))+'">'+d.k+(d.k==='Expected'?' · '+CASENAME[state.wfCase]:'')+'</div><b>'+lbl(d.v)+unit+'</b>'+(d.k==='Actual'?'<br>'+((actual/exp-1)*100).toFixed(1)+'% vs expected · gap '+lbl(expC-actC)+unit:'');}
+    else{const before=after[i-1],aft=after[i];bottom=aft/scaleMax*H;height=(before-aft)/scaleMax*H;inside=height>22;
+      tipHtml='<div class="th" style="color:'+d.c+'">'+d.k.replace(/\n/g,' ')+'</div><b>−'+lbl(d.v)+unit+'</b> · '+pctExp(d.v)+'% of expected<br><span style="opacity:.85">'+(d.sec==='unc'?'Uncontrollable (excluded from O&M KPIs)':'Controllable (included in O&M KPIs)')+'</span><br><span style="opacity:.85">Running: '+lbl(before)+' → '+lbl(aft)+unit+'</span>';}
+    const id=tip(tipHtml);const val=d.type==='total'?lbl(d.v):'−'+lbl(d.v);
+    bars+='<div class="col"><div class="bar hit" data-tip="'+id+'" style="bottom:'+bottom.toFixed(1)+'px;height:'+Math.max(height,2).toFixed(1)+'px;background:'+d.c+'">'
+      +(inside?'<span class="bvin">'+val+'</span>':'<span class="bv" style="color:'+(d.type==='total'?'var(--ink)':d.c)+'">'+val+'</span>')+'</div></div>';});
+  const cx=i=>((i+0.5)/n)*1000,cy=v=>H-v/scaleMax*H;
+  let conn='';for(let i=0;i<n-1;i++){const lv=after[i];conn+='<line x1="'+cx(i).toFixed(1)+'" y1="'+cy(lv).toFixed(1)+'" x2="'+cx(i+1).toFixed(1)+'" y2="'+cy(lv).toFixed(1)+'" stroke="var(--ink-3)" stroke-width="1.4" stroke-dasharray="4 3" opacity=".55"/>';}
   const idxU=rows.map((d,i)=>d.sec==="unc"?i:null).filter(x=>x!=null),idxC=rows.map((d,i)=>d.sec==="ctl"?i:null).filter(x=>x!=null);
-  const band=(arr,col)=>{const a=Math.min(...arr),b=Math.max(...arr);return`left:calc((${colW} + 10px) * ${a} - 5px);width:calc((${colW} + 10px) * ${b-a+1});background:${col}`;};
-  const lbl=v=>rev?eur(Math.abs(v)):fmt(Math.abs(v));
-  document.getElementById('waterfall').innerHTML=`
-    <div class="bgband" style="${band(idxU,'var(--unctrl-tint)')};opacity:.55"></div>
-    <div class="bgband" style="${band(idxC,'var(--ctrl-tint)')};opacity:.5"></div>
-    <div class="wf-sec-lab" style="${band(idxU,'var(--unctrl)')}">Uncontrollable — excluded</div>
-    <div class="wf-sec-lab" style="${band(idxC,'var(--ctrl)')}">Controllable — included in O&M / WiseEnergy KPIs</div>
-    <div style="position:relative;z-index:1">
-      <div class="wf">${cols.map(c=>`<div class="col"><div class="bar" style="height:${c.h}px;background:${c.d.c}">
-        <span class="bv" style="color:${c.d.type==='total'?'var(--ink)':c.d.c}">${c.d.type==='total'?lbl(c.d.v):(c.d.v<0?'−':'+')+lbl(c.d.v)}</span></div></div>`).join('')}</div>
-      <div class="wf-x">${rows.map(d=>`<div>${d.k.replace(/\n/g,'<br>')}</div>`).join('')}</div>
-    </div>`;
-  document.getElementById('wfTitle').textContent=`${rev?'Revenue':'Energy'} loss waterfall — ${state.bizPeriod.toUpperCase()} vs ${CASENAME[state.wfCase]} (${rev?'€':'MWh'})`;
+  const colW='calc((100% - '+((n-1)*10)+'px)/'+n+')';
+  const band=(arr,col)=>{const a=Math.min(...arr),b=Math.max(...arr);return'left:calc(('+colW+' + 10px) * '+a+' - 5px);width:calc(('+colW+' + 10px) * '+(b-a+1)+');background:'+col;};
+  document.getElementById('waterfall').innerHTML=
+    '<div class="wf-seclabs"><div class="wf-sec-lab" style="'+band(idxU,'var(--unctrl)')+'">Uncontrollable — excluded</div>'
+    +'<div class="wf-sec-lab" style="'+band(idxC,'var(--ctrl)')+'">Controllable — included in O&M / WiseEnergy KPIs</div></div>'
+    +'<div class="wf"><div class="bgband" style="'+band(idxU,'var(--unctrl-tint)')+';opacity:.5"></div>'
+    +'<div class="bgband" style="'+band(idxC,'var(--ctrl-tint)')+';opacity:.45"></div>'+bars
+    +'<svg class="wf-conn" viewBox="0 0 1000 '+H+'" preserveAspectRatio="none">'+conn+'</svg></div>'
+    +'<div class="wf-x">'+rows.map(d=>'<div>'+d.k.replace(/\n/g,'<br>')+'</div>').join('')+'</div>';
+  wireTips(document.getElementById('waterfall'));
+  const delta=((actual/exp-1)*100).toFixed(1);
+  document.getElementById('wfTitle').innerHTML=(rev?'Revenue':'Energy')+' loss waterfall — '+state.bizPeriod.toUpperCase()+' vs '+CASENAME[state.wfCase]
+    +' <span style="font-weight:600;color:'+(actual>=exp?'var(--ok)':'var(--crit)')+'">('+(delta>=0?'+':'')+delta+'% · Actual '+(rev?cur(actual):fmt(actual)+' MWh')+')</span>';
 }
 
 /* ===== TABLE ===== */
@@ -537,17 +599,17 @@ function setFilter(f){state.tableFilter=state.tableFilter===f?null:f;renderTable
 function renderTable(){
   let A=activeAssets().slice().sort((a,b)=>b.rev-a.rev);
   if(state.tableFilter)A=A.filter(a=>cat(a)===state.tableFilter);
-  const banner=state.tableFilter?`<div class="filterbar"><span>Filtered: showing ${STAT[state.tableFilter]} assets (${A.length})</span><button onclick="setFilter('${state.tableFilter}')">Clear filter ✕</button></div>`:'';
+  const banner=state.tableFilter?`<div class="filterbar"><span>Filtered: ${STAT[state.tableFilter]} assets (${A.length})</span><button onclick="setFilter('${state.tableFilter}')">Clear ✕</button></div>`:'';
   document.getElementById('tableWrap').innerHTML=banner+`<table class="atable"><thead><tr>
     <th>Asset</th><th>Fund · Region</th><th class="num">Capacity</th><th>Energy vs Budget</th>
-    <th class="num">PR</th><th class="num">Avail.</th><th class="num">Revenue at risk</th><th>Status</th></tr></thead>
-    <tbody>${A.map(a=>{const pct=a.eng/a.bud*100;const over=pct>=100;return`<tr onclick="openAsset('${a.n}')">
+    <th class="num">PR</th><th class="num">Avail.</th><th class="num">Revenue at risk</th><th>Status</th></tr></thead><tbody>
+    ${A.map(a=>{const pct=a.eng/a.bud*100,over=pct>=100;return`<tr onclick="openAsset('${a.n}')">
       <td><div class="aname"><span class="statdot s-${cat(a)}"></span>${a.n}</div></td>
       <td><div style="font-size:12.5px">${FUNDS[a.f].replace(' Fund','')}<small style="display:block;color:var(--ink-3)">${REGION[a.r]} ${a.r}</small></div></td>
       <td class="num">${a.mwp} MWp</td>
       <td><span class="bar-mini"><i style="width:${Math.min(pct,100)}%;background:${over?'var(--ok)':pct>92?'var(--warn)':'var(--crit)'}"></i></span><span class="mono" style="font-size:12px;margin-left:7px">${pct.toFixed(0)}%</span></td>
       <td class="num">${a.pr}%</td><td class="num">${a.avail}%</td>
-      <td class="num" style="color:${a.rev>50000?'var(--crit)':a.rev>15000?'var(--warn)':'var(--ink-3)'};font-weight:600">${a.rev?eur(a.rev):'—'}</td>
+      <td class="num" style="color:${a.rev>50000?'var(--crit)':a.rev>15000?'var(--warn)':'var(--ink-3)'};font-weight:600">${a.rev?cur(a.rev):'—'}</td>
       <td><span class="statustxt" style="color:var(--${cat(a)==='off'?'offline':cat(a)==='ok'?'ok':cat(a)})">${STAT[cat(a)]}</span></td></tr>`;}).join('')}</tbody></table>`;
 }
 
@@ -555,23 +617,20 @@ function renderTable(){
 function renderFundPick(){
   const sel=document.getElementById('fundPick');
   sel.innerHTML=`<option value="all">All Funds</option>`+FUNDS.map((f,i)=>`<option value="${i}">${f}</option>`).join('');
-  sel.value=state.fund;
-  sel.onchange=()=>{state.fund=sel.value==='all'?'all':+sel.value;state.tableFilter=null;liveBase=null;renderBiz();};
-  document.getElementById('crumbFund').innerHTML=state.fund==='all'?'<b>All Funds</b>':FUNDS[state.fund];
+  sel.value=state.fund;sel.onchange=()=>{state.fund=sel.value==='all'?'all':+sel.value;state.tableFilter=null;renderBiz();};
+  document.getElementById('crumbFund').textContent=state.fund==='all'?'All Funds':FUNDS[state.fund];
 }
-
-function renderBiz(){renderFundPick();renderLive();renderKpis();renderTrend();renderFocus();renderStatus();renderWaterfall();renderTable();tickClock();}
+function renderBiz(){renderFundPick();renderLive();renderKpis();renderFocus();renderStatus();renderTrend();renderWaterfall();renderTable();tickClock();}
 
 /* ===== SIDE PANEL ===== */
 function openAsset(name){
   const a=ASSETS.find(x=>x.n===name);if(!a)return;
   document.getElementById('pName').innerHTML=REGION[a.r]+' '+a.n;
   document.getElementById('pSub').textContent=`${FUNDS[a.f]} · ${a.r} · ${a.mwp} MWp`;
-  const pct=(a.eng/a.bud*100).toFixed(1);
-  const mix=REVMIX[a.r]||REVMIX.Spain;
+  const pct=(a.eng/a.bud*100).toFixed(1),mix=REVMIX[a.r]||REVMIX.Spain;
   const revRows=mix.map(m=>`<div class="rev-row"><div class="rn">${m[0]}</div>
     <span class="bar-mini rb"><i style="width:${m[1]*100}%;background:var(--gold)"></i></span>
-    <span class="mono" style="font-size:12px;width:54px;text-align:right">${eur(a.rev*m[1])}</span></div>`).join('');
+    <span class="mono" style="font-size:12px;width:60px;text-align:right">${cur(a.rev*m[1])}</span></div>`).join('');
   document.getElementById('pBody').innerHTML=`
     <div class="mini-kpi">
       <div class="m"><div class="l">Energy (YTD)</div><div class="v">${fmt(a.eng)}<span style="font-size:12px;color:var(--ink-3)"> MWh</span></div></div>
@@ -581,12 +640,11 @@ function openAsset(name){
     <div class="src"><span class="pin"></span> Export energy: Meter (DADC) · Irradiation: SCADA pyranometer</div>
     ${a.rev>8000?`<div class="sect-t">Headline incident (Calypso)</div>
       <div class="inc" style="border-left-color:var(--${cat(a)==='ok'?'ok':cat(a)==='warn'?'warn':'crit'})">
-        <div class="it"><span>${a.reason}</span><span class="loss" style="font-size:14px">${eur(a.rev)}</span></div>
-        <div class="im"><span class="pill ${a.cls}">${a.cls==='unc'?'Uncontrollable':'Controllable'}</span>
-          <span>Priority ${cat(a)==='crit'?'P1':'P2'}</span><span>·</span><span class="mono">${fmt(a.eloss)} MWh lost</span></div></div>
+        <div class="it"><span>${a.reason}</span><span class="loss" style="font-size:14px">${cur(a.rev)}</span></div>
+        <div class="im"><span class="pill ${a.cls}">${a.cls==='unc'?'Uncontrollable':'Controllable'}</span><span class="mono">${fmt(a.eloss)} MWh lost</span></div></div>
       <div class="sect-t">Expected revenue loss — by revenue type</div>
-      <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:9px">Primary driver: <b style="color:var(--ink-2)">${a.cls==='unc'?'Uncontrollable':'Controllable'} · ${a.reason}</b>. The €${fmt(a.rev)} is split across this asset's revenue stack:</div>
-      ${revRows}`:`<div class="note"><span>✓</span><span>No open performance incidents. Asset generating within budget tolerance.</span></div>`}
+      <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:9px">Primary driver: <b style="color:var(--ink-2)">${a.cls==='unc'?'Uncontrollable':'Controllable'} · ${a.reason}</b>. The ${cur(a.rev)} splits across this asset's revenue stack:</div>${revRows}`
+      :`<div class="note"><span>✓</span><span>No open performance incidents. Asset generating within budget tolerance.</span></div>`}
     <button class="btn ghost" style="width:100%;margin-top:18px" onclick="goToPI('${a.n}')">Open in Performance Insight →</button>`;
   document.getElementById('panel').classList.add('open');document.getElementById('scrim').classList.add('open');
 }
@@ -610,25 +668,28 @@ function renderPI(){
   document.getElementById('piKpis').innerHTML=k.map(x=>`<div class="kpi"><div class="accent" style="background:${x.alt?'var(--gold)':'var(--brand-2)'}"></div>
     <div class="lab">${x.l}</div><div class="val">${x.v}<small>${x.u}</small></div>
     <div class="sub"><span class="src ${x.alt?'alt':''}"><span class="pin"></span>${x.src}</span></div></div>`).join('');
-  const bars=Array.from({length:30},(_,i)=>{const x=(i-14.5)/8;let y=Math.exp(-x*x)*100;if(i>=20&&a.status==='crit')y*=0.45;return Math.max(2,y);});
+  const bars=Array.from({length:30},(_,i)=>{const xx=(i-14.5)/8;let y=Math.exp(-xx*xx)*100;if(i>=20&&a.status==='crit')y*=0.45;return Math.max(2,y);});
   document.getElementById('intraday').innerHTML=bars.map((h,i)=>`<div class="ib" style="height:${h}%" title="${(6+i*0.5).toFixed(1)}:00"></div>`).join('');
   document.getElementById('validateList').innerHTML=VALIDATE.map(v=>`<div class="validate"><div><div class="vt"><span class="statdot s-${v.sev}" style="margin-right:7px"></span>${v.t}</div><div class="vm">${v.m}</div></div>
-    <button class="btn gold" onclick="alert('Prototype: opens Calypso to raise a classified incident from this detection.')">Raise incident</button></div>`).join('');
+    <button class="btn gold" onclick="alert('Prototype: opens Calypso to raise a classified incident.')">Raise incident</button></div>`).join('');
   document.getElementById('compList').innerHTML=COMPONENTS.map(c=>`<div class="comp"><div class="cn"><span class="statdot s-${c.status}"></span>${c.n}<span class="tag" style="font-size:10px;padding:2px 7px">${c.t}</span></div>
     <div style="display:flex;align-items:center;gap:9px"><span class="bar-mini"><i style="width:${c.avail}%;background:var(--${c.status==='ok'?'ok':c.status==='warn'?'warn':'crit'})"></i></span><span class="mono" style="font-size:12px;width:44px">${c.avail}%</span></div>
     <div class="mono" style="font-size:12px;color:${c.loss>1000?'var(--crit)':'var(--ink-2)'};width:90px;text-align:right">${fmt(c.loss)} MWh</div></div>`).join('');
 }
 
-/* ===== SWITCHING ===== */
+/* ===== SWITCH / EVENTS ===== */
 function setView(v){state.view=v;document.getElementById('bizView').classList.toggle('hide',v!=='biz');document.getElementById('piView').classList.toggle('hide',v!=='pi');
   document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));window.scrollTo({top:0,behavior:'smooth'});if(v==='biz')renderBiz();else renderPI();}
 document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
-document.querySelectorAll('#periodSeg button').forEach(b=>b.onclick=()=>{state.bizPeriod=b.dataset.p;document.querySelectorAll('#periodSeg button').forEach(x=>x.classList.toggle('on',x===b));renderTrend();tickClock();renderWaterfall();});
-document.querySelectorAll('#unitSeg button').forEach(b=>b.onclick=()=>{state.bizUnit=b.dataset.u;document.querySelectorAll('#unitSeg button').forEach(x=>x.classList.toggle('on',x===b));renderTrend();});
-document.querySelectorAll('#rankSeg button').forEach(b=>b.onclick=()=>{state.rank=b.dataset.r;document.querySelectorAll('#rankSeg button').forEach(x=>x.classList.toggle('on',x===b));renderFocus();});
+document.querySelectorAll('#curSeg button').forEach(b=>b.onclick=()=>{state.currency=b.dataset.c;document.querySelectorAll('#curSeg button').forEach(x=>x.classList.toggle('on',x===b));renderBiz();});
+document.getElementById('trendToggle').onclick=function(){state.trendsOpen=!state.trendsOpen;this.classList.toggle('open',state.trendsOpen);document.getElementById('trendBody').classList.toggle('hide',!state.trendsOpen);renderTrend();};
+document.querySelectorAll('#periodSeg button').forEach(b=>b.onclick=()=>{state.bizPeriod=b.dataset.p;document.querySelectorAll('#periodSeg button').forEach(x=>x.classList.toggle('on',x===b));renderTrend();tickClock();});
+document.querySelectorAll('#rankMetric button').forEach(b=>b.onclick=()=>{state.rankMetric=b.dataset.r;document.querySelectorAll('#rankMetric button').forEach(x=>x.classList.toggle('on',x===b));renderFocus();});
+document.querySelectorAll('#rankDir button').forEach(b=>b.onclick=()=>{state.rankDir=b.dataset.d;document.querySelectorAll('#rankDir button').forEach(x=>x.classList.toggle('on',x===b));renderFocus();});
 document.querySelectorAll('#wfMetric button').forEach(b=>b.onclick=()=>{state.wfMetric=b.dataset.m;document.querySelectorAll('#wfMetric button').forEach(x=>x.classList.toggle('on',x===b));renderWaterfall();});
 document.getElementById('wfCase').onchange=e=>{state.wfCase=e.target.value;renderWaterfall();};
 document.querySelectorAll('#piTimeSeg button').forEach(b=>b.onclick=()=>{state.piTime=b.dataset.t;document.querySelectorAll('#piTimeSeg button').forEach(x=>x.classList.toggle('on',x===b));renderPI();});
+window.addEventListener('scroll',()=>{document.getElementById('stickyhead').classList.toggle('stuck',window.scrollY>10);});
 
 renderBiz();
 setInterval(tickClock,1000);
